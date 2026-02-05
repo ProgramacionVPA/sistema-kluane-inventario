@@ -1,10 +1,10 @@
 <?php
 class Conexion {
-    // Datos de tu servidor local (XAMPP)
+    // Datos del servidor
     private $host = "localhost";
     private $db_name = "kluane_inventario";
     private $username = "root";
-    private $password = ""; // En XAMPP la clave suele estar vacía
+    private $password = ""; 
     public $conn;
 
     // Método para conectar
@@ -12,7 +12,7 @@ class Conexion {
         $this->conn = null;
 
         try {
-            // Intentamos conectar usando PDO (La forma segura)
+            // Conexión usando PDO (forma segura)
             $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
             // Configurar para que nos avise si hay error y acepte tildes/eñes
             $this->conn->exec("set names utf8");
@@ -29,7 +29,7 @@ class Conexion {
     }
 }
 
-// PRUEBA RÁPIDA (Solo para verificar ahorita, luego borramos esto)
+// PRUEBA RÁPIDA (Solo para verificar que la conexión funciona)
 // $prueba = new Conexion();
 // $prueba->getConexion();
 ?>
