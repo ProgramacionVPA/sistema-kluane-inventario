@@ -110,8 +110,16 @@ $totalActivos = $activoModel->contarTotal();
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
-                                        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                        <a href="editar_activo.php?id=<?php echo $fila['id_activo']; ?>" 
+                                            class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="../../controllers/ActivoController.php?accion=eliminar&id=<?php echo $fila['id_activo']; ?>" 
+                                            class="btn btn-sm btn-outline-danger" 
+                                            onclick="return confirm('¿Estás seguro de eliminar este activo permanentemente?');">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                        
                                     </td>
                                 </tr>
                             <?php }  ?>

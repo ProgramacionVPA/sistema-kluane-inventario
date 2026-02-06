@@ -31,5 +31,38 @@ if (isset($_GET['accion'])) {
             echo "Hubo un error al guardar el activo.";
         }
     }
+
+    // CASO 2: ELIMINAR UN ACTIVO
+    elseif ($accion == 'eliminar' && isset($_GET['id'])) {
+        
+        $id = $_GET['id'];
+        
+        // Llamamos al modelo para que borre
+        if ($activoModel->eliminar($id)) {
+            // Éxito: volvemos al dashboard con un mensaje en la URL
+            header("Location: ../views/admin/dashboard.php?msg=eliminado");
+        } else {
+            echo "Error al eliminar el activo.";
+        }
+    }
+
+    // CASO 3: EDITAR UN ACTIVO (Guardar cambios)
+    elseif ($accion == 'editar' && $_SERVER['REQUEST_METHOD'] == 'POST') {
+        
+        $datos = [
+            'id_activo' => $_POST['id_activo'], // OJO: Este viene del campo oculto
+            'codigo' => $_POST['codigo'],
+            'serie' => $_POST['serie'],
+            'marca' => $_POST['marca'],
+            'modelo' => $_POST['modelo'],
+            'estado' => $_POST['estado']
+        ];
+
+        if ($activoModel->actualizar($datos)) {
+            header("Location: ../views/admin/dashboard.php?msg=actualizado");
+        } else {
+            echo "Error al actualizar el activo.";
+        }
+    }
 }
 ?>

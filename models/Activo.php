@@ -44,13 +44,13 @@ class Activo {
 
             $stmt = $this->conn->prepare($query);
 
-            // Limpiamos los datos (Seguridad básica)
+            // Limpiar los datos
             $codigo = htmlspecialchars(strip_tags($datos['codigo']));
             $serie = htmlspecialchars(strip_tags($datos['serie']));
             $marca = htmlspecialchars(strip_tags($datos['marca']));
             $modelo = htmlspecialchars(strip_tags($datos['modelo']));
 
-            // Vinculamos los valores
+            // Vincular los valores
             $stmt->bindParam(":codigo", $codigo);
             $stmt->bindParam(":serie", $serie);
             $stmt->bindParam(":marca", $marca);
@@ -59,7 +59,7 @@ class Activo {
             $stmt->bindParam(":categoria", $datos['categoria']);
             $stmt->bindParam(":sede", $datos['sede']);
             
-            // Por defecto asignamos al usuario que está logueado (quien lo registró)
+            //Usuario que está logueado 
             
             $stmt->bindParam(":usuario", $_SESSION['usuario_id']);
 
@@ -81,6 +81,71 @@ class Activo {
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row['total'];
+    }
+
+    // Función para ELIMINAR un activo por su ID
+    public function eliminar($id) {
+        try {
+            $query = "DELETE FROM " . $this->table_name . " WHERE id_activo = :id";
+            $stmt = $this->conn->prepare($query);
+            
+            // Limpieza básica de seguridad
+            $id = htmlspecialchars(strip_tags($id));
+            
+            // Vinculamos el ID
+            $stmt->bindParam(":id", $id);
+
+            if($stmt->execute()) {
+                return true;
+            }
+            return false;
+        } catch(PDOException $e) {
+            echo "Error: " . $e->getMessage();
+            return false;
+        }
+    }
+
+    // Función para obtener los datos de UN solo activo (para editar)
+    public function obtenerPorId($id) {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE id_activo = ? LIMIT 0,1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $id);
+        $stmt->execute();
+        
+        // Retorna una sola fila con los datos
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Función para ACTUALIZAR (Update) los datos de un activo
+    public function actualizar($datos) {
+        try {
+            $query = "UPDATE " . $this->table_name . " 
+                    SET codigo_interno = :codigo,
+                        serie = :serie,
+                        marca = :marca,
+                        modelo = :modelo,
+                        estado = :estado
+                    WHERE id_activo = :id";
+
+            $stmt = $this->conn->prepare($query);
+
+            // Limpieza y asignación de valores
+            $stmt->bindParam(":codigo", htmlspecialchars(strip_tags($datos['codigo'])));
+            $stmt->bindParam(":serie", htmlspecialchars(strip_tags($datos['serie'])));
+            $stmt->bindParam(":marca", htmlspecialchars(strip_tags($datos['marca'])));
+            $stmt->bindParam(":modelo", htmlspecialchars(strip_tags($datos['modelo'])));
+            $stmt->bindParam(":estado", htmlspecialchars(strip_tags($datos['estado'])));
+            $stmt->bindParam(":id", htmlspecialchars(strip_tags($datos['id_activo'])));
+
+            if($stmt->execute()) {
+                return true;
+            }
+            return false;
+
+        } catch(PDOException $e) {
+            echo "Error: " . $e->getMessage();
+            return false;
+        }
     }
 }
 ?>
