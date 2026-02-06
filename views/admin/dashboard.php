@@ -119,6 +119,7 @@ $totalActivos = $activoModel->contarTotal();
                                             <span class="badge bg-danger"><?php echo $fila['estado']; ?></span>
                                         <?php endif; ?>
                                     </td>
+                        
                                     <td>
                                         <a href="asignar.php?id=<?php echo $fila['id_activo']; ?>" 
                                             class="btn btn-sm btn-outline-info" title="Asignar">
@@ -133,6 +134,11 @@ $totalActivos = $activoModel->contarTotal();
                                             class="btn btn-sm btn-outline-danger" 
                                             onclick="return confirm('¿Estás seguro de eliminar este activo permanentemente?');">
                                             <i class="bi bi-trash"></i>
+                                        </a>
+
+                                        <a href="historial.php?id=<?php echo $fila['id_activo']; ?>" 
+                                            class="btn btn-sm btn-outline-secondary" title="Ver Historial">
+                                            <i class="bi bi-clock-history"></i>
                                         </a>
                                         
                                     </td>

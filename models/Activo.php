@@ -185,5 +185,20 @@ class Activo {
             return false;
         }
     }
+
+    // Función para ver la VIDA del activo (Historial)
+    public function obtenerHistorial($id_activo) {
+        $query = "SELECT h.*, u.nombre_completo, u.email 
+                  FROM historial_movimientos h
+                  INNER JOIN usuarios u ON h.id_usuario_responsable = u.id_usuario
+                  WHERE h.id_activo = :id
+                  ORDER BY h.fecha_asignacion DESC"; // Lo más reciente primero
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id", $id_activo);
+        $stmt->execute();
+        
+        return $stmt;
+    }
 }
 ?>
