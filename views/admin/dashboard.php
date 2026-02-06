@@ -82,7 +82,7 @@ $totalActivos = $activoModel->contarTotal();
                                 <th>Serie</th>
                                 <th>Categoría</th>
                                 <th>Sede</th>
-                                <th>Estado</th>
+                                <th>Custodio</th> <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -101,6 +101,16 @@ $totalActivos = $activoModel->contarTotal();
                                     <td><span class="badge bg-secondary"><?php echo $fila['categoria']; ?></span></td>
                                     <td><?php echo $fila['sede']; ?></td>
                                     <td>
+                                        <?php if($fila['responsable']): ?>
+                                            <span class="badge bg-info text-dark">
+                                                <i class="bi bi-person"></i> <?php echo $fila['responsable']; ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="badge bg-light text-muted border">Sin Asignar</span>
+                                        <?php endif; ?>
+                                    </td>
+
+                                    <td>
                                         <?php if($fila['estado'] == 'Operativo'): ?>
                                             <span class="badge bg-success">Operativo</span>
                                         <?php elseif($fila['estado'] == 'Mantenimiento'): ?>
@@ -110,6 +120,11 @@ $totalActivos = $activoModel->contarTotal();
                                         <?php endif; ?>
                                     </td>
                                     <td>
+                                        <a href="asignar.php?id=<?php echo $fila['id_activo']; ?>" 
+                                            class="btn btn-sm btn-outline-info" title="Asignar">
+                                            <i class="bi bi-person-check-fill"></i>
+                                        </a>
+                                        
                                         <a href="editar_activo.php?id=<?php echo $fila['id_activo']; ?>" 
                                             class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-pencil"></i>

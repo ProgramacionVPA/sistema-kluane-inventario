@@ -147,5 +147,43 @@ class Activo {
             return false;
         }
     }
+
+    // Función para ASIGNAR un equipo (Cambia dueño + Guarda Historial)
+    public function asignar($id_activo, $id_usuario, $observacion) {
+        try {
+            // INICIO DE TRANSACCIÓN (Todo o nada)
+            $this->conn->beginTransaction();
+
+            // 1. Actualizar tabla ACTIVOS (Nuevo responsable)
+            $query1 = "UPDATE " . $this->table_name . " 
+                       SET id_usuario_responsable = :usuario, 
+                           estado = 'Operativo' 
+                       WHERE id_activo = :activo";
+            
+            $stmt1 = $this->conn->prepare($query1);
+            $stmt1->bindParam(":usuario", $id_usuario);
+            $stmt1->bindParam(":activo", $id_activo);
+            $stmt1->execute();
+
+            // 2. Insertar en HISTORIAL
+            $query2 = "INSERT INTO historial_movimientos 
+                       (id_activo, id_usuario_responsable, observacion, tipo_movimiento) 
+                       VALUES (:activo, :usuario, :obs, 'Asignacion')";
+            
+            $stmt2 = $this->conn->prepare($query2);
+            $stmt2->bindParam(":activo", $id_activo);
+            $stmt2->bindParam(":usuario", $id_usuario);
+            $stmt2->bindParam(":obs", $observacion);
+            $stmt2->execute();
+
+            // Si todo bien, guardar cambios
+            $this->conn->commit();
+            return true;
+
+        } catch(Exception $e) {
+            $this->conn->rollBack(); // Si falla, deshacer
+            return false;
+        }
+    }
 }
 ?>
