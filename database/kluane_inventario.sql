@@ -121,7 +121,7 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id_usuario`, `nombre_completo`, `email`, `password`, `id_rol`, `id_sede`) VALUES
-(1, 'Victor Admin', 'admin@kluane.com', '123456', 1, 1);
+(1, 'Victor Admin', 'admin@kluane.com', '$2a$12$26xkCQgFe30r/ARkRk9T1.hFMgq9KXkJM3qCE17Eotkp5XbILn.8m', 1, 1);
 
 --
 -- Índices para tablas volcadas
