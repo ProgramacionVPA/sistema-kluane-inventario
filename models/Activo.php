@@ -12,7 +12,7 @@ class Activo {
 
     // Función para LEER todo el inventario (Matriz 07)
     public function leerTodo() {
-        // Hacemos un JOIN para que no salgan números (id_sede), sino los nombres reales
+        // Hacemos un JOIN para que no salgan números, sino nombres reales
         $query = "SELECT 
                     a.id_activo,
                     a.codigo_interno,
@@ -59,9 +59,10 @@ class Activo {
             $stmt->bindParam(":categoria", $datos['categoria']);
             $stmt->bindParam(":sede", $datos['sede']);
             
-            //Usuario que está logueado 
-            
-            $stmt->bindParam(":usuario", $_SESSION['usuario_id']);
+            // CORRECCIÓN IMPORTANTE: Usamos 'id_usuario' que es la correcta
+            // Si la sesión no está iniciada (caso raro), ponemos NULL para que no falle
+            $usuario_responsable = isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario'] : null;
+            $stmt->bindParam(":usuario", $usuario_responsable);
 
             if($stmt->execute()) {
                 return true;
@@ -89,10 +90,7 @@ class Activo {
             $query = "DELETE FROM " . $this->table_name . " WHERE id_activo = :id";
             $stmt = $this->conn->prepare($query);
             
-            // Limpieza básica de seguridad
             $id = htmlspecialchars(strip_tags($id));
-            
-            // Vinculamos el ID
             $stmt->bindParam(":id", $id);
 
             if($stmt->execute()) {
@@ -111,8 +109,6 @@ class Activo {
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $id);
         $stmt->execute();
-        
-        // Retorna una sola fila con los datos
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -129,7 +125,6 @@ class Activo {
 
             $stmt = $this->conn->prepare($query);
 
-            // Limpieza y asignación de valores
             $stmt->bindParam(":codigo", htmlspecialchars(strip_tags($datos['codigo'])));
             $stmt->bindParam(":serie", htmlspecialchars(strip_tags($datos['serie'])));
             $stmt->bindParam(":marca", htmlspecialchars(strip_tags($datos['marca'])));
@@ -146,6 +141,59 @@ class Activo {
             echo "Error: " . $e->getMessage();
             return false;
         }
+    }
+
+    // Función para ASIGNAR un equipo (Cambia dueño + Guarda Historial)
+    public function asignar($id_activo, $id_usuario, $observacion) {
+        try {
+            // INICIO DE TRANSACCIÓN (Todo o nada)
+            $this->conn->beginTransaction();
+
+            // 1. Actualizar tabla ACTIVOS (Nuevo responsable)
+            $query1 = "UPDATE " . $this->table_name . " 
+                       SET id_usuario_responsable = :usuario, 
+                           estado = 'Operativo' 
+                       WHERE id_activo = :activo";
+            
+            $stmt1 = $this->conn->prepare($query1);
+            $stmt1->bindParam(":usuario", $id_usuario);
+            $stmt1->bindParam(":activo", $id_activo);
+            $stmt1->execute();
+
+            // 2. Insertar en HISTORIAL
+            $query2 = "INSERT INTO historial_movimientos 
+                       (id_activo, id_usuario_responsable, observacion, tipo_movimiento) 
+                       VALUES (:activo, :usuario, :obs, 'Asignacion')";
+            
+            $stmt2 = $this->conn->prepare($query2);
+            $stmt2->bindParam(":activo", $id_activo);
+            $stmt2->bindParam(":usuario", $id_usuario);
+            $stmt2->bindParam(":obs", $observacion);
+            $stmt2->execute();
+
+            // Si todo bien, guardar cambios
+            $this->conn->commit();
+            return true;
+
+        } catch(Exception $e) {
+            $this->conn->rollBack(); // Si falla, deshacer
+            return false;
+        }
+    }
+
+    // Función para ver la VIDA del activo (Historial)
+    public function obtenerHistorial($id_activo) {
+        $query = "SELECT h.*, u.nombre_completo, u.email 
+                  FROM historial_movimientos h
+                  INNER JOIN usuarios u ON h.id_usuario_responsable = u.id_usuario
+                  WHERE h.id_activo = :id
+                  ORDER BY h.fecha_asignacion DESC"; 
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id", $id_activo);
+        $stmt->execute();
+        
+        return $stmt;
     }
 }
 ?>

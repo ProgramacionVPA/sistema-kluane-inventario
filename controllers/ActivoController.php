@@ -2,6 +2,13 @@
 session_start();
 require_once __DIR__ . '/../models/Activo.php';
 
+// 1. SEGURIDAD: Verificar si el usuario está logueado
+// Si no hay sesión 'id_usuario', lo mandamos al login
+if (!isset($_SESSION['id_usuario'])) {
+    header("Location: ../views/auth/login.php");
+    exit();
+}
+
 // Verificamos si hay una acción en la URL (ej: ?accion=crear)
 if (isset($_GET['accion'])) {
     
@@ -62,6 +69,20 @@ if (isset($_GET['accion'])) {
             header("Location: ../views/admin/dashboard.php?msg=actualizado");
         } else {
             echo "Error al actualizar el activo.";
+        }
+    }
+
+    // CASO 4: ASIGNAR ACTIVO
+    elseif ($accion == 'asignar' && $_SERVER['REQUEST_METHOD'] == 'POST') {
+        
+        $id_activo = $_POST['id_activo'];
+        $id_usuario = $_POST['id_usuario'];
+        $observacion = $_POST['observacion'];
+
+        if ($activoModel->asignar($id_activo, $id_usuario, $observacion)) {
+            header("Location: ../views/admin/dashboard.php?msg=asignado");
+        } else {
+            echo "Error al asignar.";
         }
     }
 }

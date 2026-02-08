@@ -1,16 +1,27 @@
 <?php
 session_start();
-// 1. Seguridad
-if (!isset($_SESSION['usuario_id'])) {
+
+// 1. Seguridad: Verificar si el usuario está logueado
+// CORRECCIÓN: Usamos 'id_usuario' que es como lo guardamos en el controlador
+if (!isset($_SESSION['id_usuario'])) {
     header("Location: ../auth/login.php");
     exit();
 }
 
-// 2. Importar el Modelo
+// 2. Importar el Modelo de Activos (Asegúrate de que este archivo exista)
+// Si te da error aquí, comenta estas lineas temporalmente
 require_once '../../models/Activo.php';
-$activoModel = new Activo();
-$resultado = $activoModel->leerTodo();
-$totalActivos = $activoModel->contarTotal();
+
+// Inicializar variables para evitar errores si no hay datos aun
+$totalActivos = 0;
+$resultado = null;
+
+// Intentar cargar datos solo si el modelo existe
+if (class_exists('Activo')) {
+    $activoModel = new Activo();
+    $resultado = $activoModel->leerTodo();
+    $totalActivos = $activoModel->contarTotal();
+}
 ?>
 
 <!DOCTYPE html>
@@ -27,7 +38,7 @@ $totalActivos = $activoModel->contarTotal();
         <div class="container-fluid">
             <a class="navbar-brand fw-bold" href="#">KLUANE INVENTARIO</a>
             <div class="d-flex text-white align-items-center">
-                <span class="me-3"><i class="bi bi-person-circle"></i> <?php echo $_SESSION['usuario_nombre']; ?></span>
+                <span class="me-3"><i class="bi bi-person-circle"></i> <?php echo $_SESSION['nombre_completo']; ?></span>
                 <a href="../../controllers/Logout.php" class="btn btn-danger btn-sm">Salir</a>
             </div>
         </div>
@@ -82,14 +93,14 @@ $totalActivos = $activoModel->contarTotal();
                                 <th>Serie</th>
                                 <th>Categoría</th>
                                 <th>Sede</th>
-                                <th>Estado</th>
+                                <th>Custodio</th> <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php 
-                            // Aquí empieza el bucle PHP para generar filas
-                            while ($fila = $resultado->fetch(PDO::FETCH_ASSOC)) { 
+                            if ($resultado) {
+                                while ($fila = $resultado->fetch(PDO::FETCH_ASSOC)) { 
                             ?>
                                 <tr>
                                     <td class="fw-bold text-primary"><?php echo $fila['codigo_interno']; ?></td>
@@ -101,6 +112,16 @@ $totalActivos = $activoModel->contarTotal();
                                     <td><span class="badge bg-secondary"><?php echo $fila['categoria']; ?></span></td>
                                     <td><?php echo $fila['sede']; ?></td>
                                     <td>
+                                        <?php if($fila['responsable']): ?>
+                                            <span class="badge bg-info text-dark">
+                                                <i class="bi bi-person"></i> <?php echo $fila['responsable']; ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="badge bg-light text-muted border">Sin Asignar</span>
+                                        <?php endif; ?>
+                                    </td>
+
+                                    <td>
                                         <?php if($fila['estado'] == 'Operativo'): ?>
                                             <span class="badge bg-success">Operativo</span>
                                         <?php elseif($fila['estado'] == 'Mantenimiento'): ?>
@@ -109,20 +130,35 @@ $totalActivos = $activoModel->contarTotal();
                                             <span class="badge bg-danger"><?php echo $fila['estado']; ?></span>
                                         <?php endif; ?>
                                     </td>
+                        
                                     <td>
-                                        <a href="editar_activo.php?id=<?php echo $fila['id_activo']; ?>" 
-                                            class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <a href="../../controllers/ActivoController.php?accion=eliminar&id=<?php echo $fila['id_activo']; ?>" 
-                                            class="btn btn-sm btn-outline-danger" 
-                                            onclick="return confirm('¿Estás seguro de eliminar este activo permanentemente?');">
-                                            <i class="bi bi-trash"></i>
+                                        <a href="asignar.php?id=<?php echo $fila['id_activo']; ?>" 
+                                           class="btn btn-sm btn-outline-info" title="Asignar">
+                                           <i class="bi bi-person-check-fill"></i>
                                         </a>
                                         
+                                        <a href="editar_activo.php?id=<?php echo $fila['id_activo']; ?>" 
+                                           class="btn btn-sm btn-outline-primary">
+                                           <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="../../controllers/ActivoController.php?accion=eliminar&id=<?php echo $fila['id_activo']; ?>" 
+                                           class="btn btn-sm btn-outline-danger" 
+                                           onclick="return confirm('¿Estás seguro de eliminar este activo permanentemente?');">
+                                           <i class="bi bi-trash"></i>
+                                        </a>
+
+                                        <a href="historial.php?id=<?php echo $fila['id_activo']; ?>" 
+                                           class="btn btn-sm btn-outline-secondary" title="Ver Historial">
+                                           <i class="bi bi-clock-history"></i>
+                                        </a>
                                     </td>
                                 </tr>
-                            <?php }  ?>
+                            <?php 
+                                } // Fin del while
+                            } else {
+                                echo "<tr><td colspan='8' class='text-center'>No hay activos registrados o no se pudo cargar el modelo.</td></tr>";
+                            }
+                            ?>
                         </tbody>
                     </table>
                 </div>
