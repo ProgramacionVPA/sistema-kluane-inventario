@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION['usuario_id'])) { header("Location: ../auth/login.php"); exit(); }
+if (!isset($_SESSION['id_usuario'])) { header("Location: ../auth/login.php"); exit(); }
 if (!isset($_GET['id'])) { header("Location: dashboard.php"); exit(); }
 
 require_once '../../models/Activo.php';

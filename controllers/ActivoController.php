@@ -2,6 +2,13 @@
 session_start();
 require_once __DIR__ . '/../models/Activo.php';
 
+// 1. SEGURIDAD: Verificar si el usuario está logueado
+// Si no hay sesión 'id_usuario', lo mandamos al login
+if (!isset($_SESSION['id_usuario'])) {
+    header("Location: ../views/auth/login.php");
+    exit();
+}
+
 // Verificamos si hay una acción en la URL (ej: ?accion=crear)
 if (isset($_GET['accion'])) {
     

@@ -1,53 +1,55 @@
 <?php
 // models/Usuario.php
+// VERSIÓN SEGURA - SPRINT 2
 
 class Usuario {
     private $conn;
-    private $table_name = "usuarios"; // Asegúrate que tu tabla en la BD se llame así
+    private $table_name = "usuarios";
 
-    public $id;
-    public $nombre;
+    // Propiedades exactas de tu Base de Datos
+    public $id_usuario;
+    public $nombre_completo;
     public $email;
     public $password;
-    public $rol;
+    public $id_rol;
+    public $id_sede;
 
     public function __construct($db) {
         $this->conn = $db;
     }
 
-    // Función para verificar el login
     public function login() {
-        // Consulta para buscar el usuario por email
-        $query = "SELECT id, nombre, password, rol FROM " . $this->table_name . " WHERE email = ? LIMIT 0,1";
+        // 1. Buscamos el usuario por su email
+        $query = "SELECT id_usuario, nombre_completo, password, id_rol, id_sede 
+                  FROM " . $this->table_name . " 
+                  WHERE email = ? 
+                  LIMIT 0,1";
 
-        // Preparar la declaración
         $stmt = $this->conn->prepare($query);
 
-        // Limpiar datos (seguridad)
+        // Limpiamos el email por seguridad
         $this->email = htmlspecialchars(strip_tags($this->email));
-
-        // Vincular el email al parámetro ?
         $stmt->bindParam(1, $this->email);
-
-        // Ejecutar la consulta
         $stmt->execute();
 
-        // Si encontramos el usuario
+        // 2. Si encontramos el email...
         if ($stmt->rowCount() > 0) {
-            // Obtener los datos (fetch)
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Verificar la contraseña (usando password_verify para hashes o comparación directa si aún no usas hash)
-            // NOTA: Para este prototipo asumiremos que las contraseñas están hasheadas. 
-            // Si en tu BD están en texto plano, cambia esto por: if ($this->password == $row['password'])
+            // 3. VERIFICACIÓN DE SEGURIDAD
+            // Aquí comparamos la contraseña "123456" con el hash encriptado de la BD
             if (password_verify($this->password, $row['password'])) {
-                // Asignar valores al objeto
-                $this->id = $row['id'];
-                $this->nombre = $row['nombre'];
-                $this->rol = $row['rol'];
+                
+                // Si coinciden, llenamos los datos
+                $this->id_usuario = $row['id_usuario'];
+                $this->nombre_completo = $row['nombre_completo'];
+                $this->id_rol = $row['id_rol'];
+                $this->id_sede = $row['id_sede'];
+                
                 return true;
             }
         }
+        // Si llegamos aquí, es que la contraseña o el email fallaron
         return false;
     }
 }

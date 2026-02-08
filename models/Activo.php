@@ -12,7 +12,7 @@ class Activo {
 
     // Función para LEER todo el inventario (Matriz 07)
     public function leerTodo() {
-        // Hacemos un JOIN para que no salgan números (id_sede), sino los nombres reales
+        // Hacemos un JOIN para que no salgan números, sino nombres reales
         $query = "SELECT 
                     a.id_activo,
                     a.codigo_interno,
@@ -59,9 +59,10 @@ class Activo {
             $stmt->bindParam(":categoria", $datos['categoria']);
             $stmt->bindParam(":sede", $datos['sede']);
             
-            //Usuario que está logueado 
-            
-            $stmt->bindParam(":usuario", $_SESSION['usuario_id']);
+            // CORRECCIÓN IMPORTANTE: Usamos 'id_usuario' que es la correcta
+            // Si la sesión no está iniciada (caso raro), ponemos NULL para que no falle
+            $usuario_responsable = isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario'] : null;
+            $stmt->bindParam(":usuario", $usuario_responsable);
 
             if($stmt->execute()) {
                 return true;
@@ -89,10 +90,7 @@ class Activo {
             $query = "DELETE FROM " . $this->table_name . " WHERE id_activo = :id";
             $stmt = $this->conn->prepare($query);
             
-            // Limpieza básica de seguridad
             $id = htmlspecialchars(strip_tags($id));
-            
-            // Vinculamos el ID
             $stmt->bindParam(":id", $id);
 
             if($stmt->execute()) {
@@ -111,8 +109,6 @@ class Activo {
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $id);
         $stmt->execute();
-        
-        // Retorna una sola fila con los datos
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -129,7 +125,6 @@ class Activo {
 
             $stmt = $this->conn->prepare($query);
 
-            // Limpieza y asignación de valores
             $stmt->bindParam(":codigo", htmlspecialchars(strip_tags($datos['codigo'])));
             $stmt->bindParam(":serie", htmlspecialchars(strip_tags($datos['serie'])));
             $stmt->bindParam(":marca", htmlspecialchars(strip_tags($datos['marca'])));
@@ -192,7 +187,7 @@ class Activo {
                   FROM historial_movimientos h
                   INNER JOIN usuarios u ON h.id_usuario_responsable = u.id_usuario
                   WHERE h.id_activo = :id
-                  ORDER BY h.fecha_asignacion DESC"; // Lo más reciente primero
+                  ORDER BY h.fecha_asignacion DESC"; 
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id", $id_activo);
