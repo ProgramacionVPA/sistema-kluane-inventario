@@ -72,9 +72,11 @@ if ($id_sede_seleccionada) {
         <div class="card shadow">
             <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 text-uppercase fw-bold">Inventario Actualizado en Sitio</h6>
-                <button class="btn btn-light btn-sm fw-bold" onclick="window.print()">
-                    <i class="bi bi-printer-fill"></i> IMPRIMIR REPORTE
-                </button>
+                <a href="generar_matriz_pdf.php?sede=<?php echo $id_sede_seleccionada; ?>" 
+                    target="_blank" 
+                    class="btn btn-danger btn-sm fw-bold">
+                    <i class="bi bi-file-earmark-pdf-fill"></i> DESCARGAR PDF OFICIAL (EC-IT-F-09)
+                </a>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
