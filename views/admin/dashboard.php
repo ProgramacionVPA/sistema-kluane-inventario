@@ -158,6 +158,10 @@ if (class_exists('Activo')) {
                                             title="Imprimir Acta de Entrega">
                                             <i class="bi bi-file-earmark-pdf-fill"></i> PDF
                                         </a>
+
+                                        <a href="ver_matriz.php" class="btn btn-outline-primary mb-3">
+                                            <i class="bi bi-table"></i> Ver Matriz 09 (Campamento)
+                                        </a>
                                     </td>
                                 </tr>
                             <?php 

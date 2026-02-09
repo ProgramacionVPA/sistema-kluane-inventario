@@ -143,40 +143,37 @@ class Activo {
         }
     }
 
-    // Función para ASIGNAR un equipo (Cambia dueño + Guarda Historial)
-    public function asignar($id_activo, $id_usuario, $observacion) {
+// Función para asignar responsable Y cambiar de sede al mismo tiempo
+    public function asignar($id_activo, $id_usuario, $id_sede, $observacion) {
         try {
-            // INICIO DE TRANSACCIÓN (Todo o nada)
-            $this->conn->beginTransaction();
-
-            // 1. Actualizar tabla ACTIVOS (Nuevo responsable)
-            $query1 = "UPDATE " . $this->table_name . " 
-                       SET id_usuario_responsable = :usuario, 
-                           estado = 'Operativo' 
-                       WHERE id_activo = :activo";
+            // 1. Actualizar tabla ACTIVOS
+            $query = "UPDATE activos SET 
+                      id_usuario_responsable = :id_usuario, 
+                      id_sede_actual = :id_sede,     -- Aquí guardamos la nueva sede
+                      estado = 'Operativo',          -- Asumimos que si se asigna, está operativo
+                      necesita_insumos = 'NO'        -- Reseteamos alertas
+                      WHERE id_activo = :id_activo";
             
-            $stmt1 = $this->conn->prepare($query1);
-            $stmt1->bindParam(":usuario", $id_usuario);
-            $stmt1->bindParam(":activo", $id_activo);
-            $stmt1->execute();
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":id_usuario", $id_usuario);
+            $stmt->bindParam(":id_sede", $id_sede);
+            $stmt->bindParam(":id_activo", $id_activo);
+            $stmt->execute();
 
-            // 2. Insertar en HISTORIAL
-            $query2 = "INSERT INTO historial_movimientos 
-                       (id_activo, id_usuario_responsable, observacion, tipo_movimiento) 
-                       VALUES (:activo, :usuario, :obs, 'Asignacion')";
+            // 2. Guardar en HISTORIAL
+            $queryH = "INSERT INTO historial_movimientos 
+                       (id_activo, id_usuario_responsable, tipo_movimiento, fecha_movimiento, ubicacion_destino, observacion) 
+                       VALUES (:id_activo, :id_usuario, 'Asignacion', NOW(), :id_sede, :obs)";
             
-            $stmt2 = $this->conn->prepare($query2);
-            $stmt2->bindParam(":activo", $id_activo);
-            $stmt2->bindParam(":usuario", $id_usuario);
-            $stmt2->bindParam(":obs", $observacion);
-            $stmt2->execute();
+            $stmtH = $this->conn->prepare($queryH);
+            $stmtH->bindParam(":id_activo", $id_activo);
+            $stmtH->bindParam(":id_usuario", $id_usuario);
+            $stmtH->bindParam(":id_sede", $id_sede); // Guardamos el ID de la sede en ubicación
+            $stmtH->bindParam(":obs", $observacion);
+            $stmtH->execute();
 
-            // Si todo bien, guardar cambios
-            $this->conn->commit();
             return true;
-
-        } catch(Exception $e) {
-            $this->conn->rollBack(); // Si falla, deshacer
+        } catch (PDOException $e) {
             return false;
         }
     }
@@ -195,5 +192,7 @@ class Activo {
         
         return $stmt;
     }
+
+    
 }
 ?>
