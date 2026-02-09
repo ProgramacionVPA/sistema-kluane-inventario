@@ -1,6 +1,6 @@
 <?php
 // 1. Llamar a la librería (Fíjate que la ruta coincida con las carpetas que creamos)
-require('libs/fpdf.php');
+require('libs/fpdf/fpdf.php');
 
 // 2. Crear el objeto PDF
 // 'P' = Vertical, 'mm' = Milímetros, 'A4' = Tamaño de hoja
