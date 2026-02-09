@@ -151,6 +151,13 @@ if (class_exists('Activo')) {
                                            class="btn btn-sm btn-outline-secondary" title="Ver Historial">
                                            <i class="bi bi-clock-history"></i>
                                         </a>
+
+                                        <a href="generar_acta.php?id=<?php echo $fila['id_activo']; ?>" 
+                                            target="_blank" 
+                                            class="btn btn-sm btn-outline-danger" 
+                                            title="Imprimir Acta de Entrega">
+                                            <i class="bi bi-file-earmark-pdf-fill"></i> PDF
+                                        </a>
                                     </td>
                                 </tr>
                             <?php 
