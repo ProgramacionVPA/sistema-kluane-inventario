@@ -3,13 +3,12 @@ session_start();
 require_once __DIR__ . '/../models/Activo.php';
 
 // 1. SEGURIDAD: Verificar si el usuario está logueado
-// Si no hay sesión 'id_usuario', lo mandamos al login
 if (!isset($_SESSION['id_usuario'])) {
     header("Location: ../views/auth/login.php");
     exit();
 }
 
-// Verificamos si hay una acción en la URL (ej: ?accion=crear)
+// Verificamos si hay una acción en la URL
 if (isset($_GET['accion'])) {
     
     $accion = $_GET['accion'];
@@ -18,7 +17,6 @@ if (isset($_GET['accion'])) {
     // CASO 1: CREAR UN NUEVO ACTIVO
     if ($accion == 'crear' && $_SERVER['REQUEST_METHOD'] == 'POST') {
         
-        // Recolectamos los datos del formulario
         $datos = [
             'codigo' => $_POST['codigo'],
             'serie' => $_POST['serie'],
@@ -29,12 +27,9 @@ if (isset($_GET['accion'])) {
             'estado' => $_POST['estado']
         ];
 
-        // Llamamos al modelo para guardar
         if ($activoModel->crear($datos)) {
-            // Si guardó bien, volvemos al Dashboard
             header("Location: ../views/admin/dashboard.php?msg=guardado");
         } else {
-            // Si falló, avisamos
             echo "Hubo un error al guardar el activo.";
         }
     }
@@ -44,20 +39,18 @@ if (isset($_GET['accion'])) {
         
         $id = $_GET['id'];
         
-        // Llamamos al modelo para que borre
         if ($activoModel->eliminar($id)) {
-            // Éxito: volvemos al dashboard con un mensaje en la URL
             header("Location: ../views/admin/dashboard.php?msg=eliminado");
         } else {
             echo "Error al eliminar el activo.";
         }
     }
 
-    // CASO 3: EDITAR UN ACTIVO (Guardar cambios)
+    // CASO 3: EDITAR UN ACTIVO
     elseif ($accion == 'editar' && $_SERVER['REQUEST_METHOD'] == 'POST') {
         
         $datos = [
-            'id_activo' => $_POST['id_activo'], // OJO: Este viene del campo oculto
+            'id_activo' => $_POST['id_activo'],
             'codigo' => $_POST['codigo'],
             'serie' => $_POST['serie'],
             'marca' => $_POST['marca'],
@@ -72,14 +65,23 @@ if (isset($_GET['accion'])) {
         }
     }
 
-    // CASO 4: ASIGNAR ACTIVO
+    // CASO 4: ASIGNAR ACTIVO (MODIFICADO PARA INCLUIR SEDE)
     elseif ($accion == 'asignar' && $_SERVER['REQUEST_METHOD'] == 'POST') {
         
+        // Recibimos los datos del formulario actualizado
         $id_activo = $_POST['id_activo'];
-        $id_usuario = $_POST['id_usuario'];
+        $id_usuario = $_POST['id_usuario']; // El Custodio
+        $id_sede = $_POST['id_sede'];       // La Nueva Ubicación (Proyecto)
         $observacion = $_POST['observacion'];
 
-        if ($activoModel->asignar($id_activo, $id_usuario, $observacion)) {
+        // Validación básica
+        if(empty($id_activo) || empty($id_usuario) || empty($id_sede)){
+            echo "<script>alert('Error: Debe seleccionar un Custodio y una Sede.'); window.history.back();</script>";
+            exit();
+        }
+
+        // Llamamos a la función asignar pasándole también la SEDE
+        if ($activoModel->asignar($id_activo, $id_usuario, $id_sede, $observacion)) {
             header("Location: ../views/admin/dashboard.php?msg=asignado");
         } else {
             echo "Error al asignar.";
