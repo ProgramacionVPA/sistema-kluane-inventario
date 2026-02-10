@@ -39,6 +39,9 @@ if (class_exists('Activo')) {
             <a class="navbar-brand fw-bold" href="#">KLUANE INVENTARIO</a>
             <div class="d-flex text-white align-items-center">
                 <span class="me-3"><i class="bi bi-person-circle"></i> <?php echo $_SESSION['nombre_completo']; ?></span>
+                <a href="usuarios.php" class="btn btn-outline-light btn-sm me-2">
+                    <i class="bi bi-people-fill"></i> Usuarios
+                </a>
                 <a href="../../controllers/Logout.php" class="btn btn-danger btn-sm">Salir</a>
             </div>
         </div>
