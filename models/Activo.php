@@ -143,7 +143,7 @@ class Activo {
         }
     }
 
-// Función para asignar responsable Y cambiar de sede al mismo tiempo
+    // Función para asignar responsable Y cambiar de sede al mismo tiempo
     public function asignar($id_activo, $id_usuario, $id_sede, $observacion) {
         try {
             // 1. Actualizar tabla ACTIVOS
@@ -192,7 +192,25 @@ class Activo {
         
         return $stmt;
     }
-
     
+
+    // 2. Contar activos por Estado (Para el gráfico de Pastel)
+    public function contarPorEstado() {
+        $query = "SELECT estado, COUNT(*) as cantidad FROM " . $this->table_name . " GROUP BY estado";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // 3. Contar activos por Sede (Para el gráfico de Barras)
+    public function contarPorSede() {
+        $query = "SELECT s.nombre as sede, COUNT(a.id_activo) as cantidad 
+                  FROM " . $this->table_name . " a
+                  LEFT JOIN sedes s ON a.id_sede_actual = s.id_sede
+                  GROUP BY s.id_sede";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 ?>

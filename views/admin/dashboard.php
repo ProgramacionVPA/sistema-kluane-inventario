@@ -2,25 +2,28 @@
 session_start();
 
 // 1. Seguridad: Verificar si el usuario está logueado
-// CORRECCIÓN: Usamos 'id_usuario' que es como lo guardamos en el controlador
 if (!isset($_SESSION['id_usuario'])) {
     header("Location: ../auth/login.php");
     exit();
 }
 
-// 2. Importar el Modelo de Activos (Asegúrate de que este archivo exista)
-// Si te da error aquí, comenta estas lineas temporalmente
 require_once '../../models/Activo.php';
 
-// Inicializar variables para evitar errores si no hay datos aun
+// Inicializar variables
 $totalActivos = 0;
 $resultado = null;
+$jsonEstados = "[]";
+$jsonSedes = "[]";
 
-// Intentar cargar datos solo si el modelo existe
+// Intentar cargar datos
 if (class_exists('Activo')) {
     $activoModel = new Activo();
     $resultado = $activoModel->leerTodo();
     $totalActivos = $activoModel->contarTotal();
+    
+    // Obtenemos los datos para los gráficos y los convertimos a JSON
+    $jsonEstados = json_encode($activoModel->contarPorEstado());
+    $jsonSedes = json_encode($activoModel->contarPorSede());
 }
 ?>
 
@@ -31,6 +34,7 @@ if (class_exists('Activo')) {
     <title>Panel Principal - Kluane</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-light">
 
@@ -54,8 +58,8 @@ if (class_exists('Activo')) {
                 <div class="card shadow-sm border-0">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-0 text-primary">Matriz de Activos 07</h4>
-                            <p class="text-muted mb-0">Gestión centralizada de equipos</p>
+                            <h4 class="mb-0 text-primary"><i class="bi bi-speedometer2"></i> Dashboard Ejecutivo y Matriz 07</h4>
+                            <p class="text-muted mb-0">Gestión centralizada de equipos y métricas en tiempo real</p>
                         </div>
                         <a href="nuevo_activo.php" class="btn btn-success"><i class="bi bi-plus-lg"></i> Nuevo Activo</a>
                     </div>
@@ -64,22 +68,24 @@ if (class_exists('Activo')) {
         </div>
 
         <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card bg-primary text-white shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <h6 class="card-title text-uppercase opacity-75">Total Activos</h6>
-                        <h2 class="display-4 fw-bold mb-0"><?php echo $totalActivos; ?></h2>
-                        <small>Equipos registrados</small>
+            <div class="col-md-5">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white fw-bold text-secondary">
+                        Distribución por Estado
+                    </div>
+                    <div class="card-body">
+                        <canvas id="graficoEstados" style="max-height: 250px;"></canvas>
                     </div>
                 </div>
             </div>
             
-            <div class="col-md-4">
-                <div class="card bg-success text-white shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <h6 class="card-title text-uppercase opacity-75">Operativos</h6>
-                        <h2 class="display-4 fw-bold mb-0"><i class="bi bi-check-circle"></i></h2>
-                        <small>Estado saludable</small>
+            <div class="col-md-7">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white fw-bold text-secondary">
+                        Equipos por Proyecto / Sede (Total: <?php echo $totalActivos; ?> equipos)
+                    </div>
+                    <div class="card-body">
+                        <canvas id="graficoSedes" style="max-height: 250px;"></canvas>
                     </div>
                 </div>
             </div>
@@ -96,7 +102,8 @@ if (class_exists('Activo')) {
                                 <th>Serie</th>
                                 <th>Categoría</th>
                                 <th>Sede</th>
-                                <th>Custodio</th> <th>Estado</th>
+                                <th>Custodio</th> 
+                                <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -144,6 +151,7 @@ if (class_exists('Activo')) {
                                            class="btn btn-sm btn-outline-primary">
                                            <i class="bi bi-pencil"></i>
                                         </a>
+                                        
                                         <a href="../../controllers/ActivoController.php?accion=eliminar&id=<?php echo $fila['id_activo']; ?>" 
                                            class="btn btn-sm btn-outline-danger" 
                                            onclick="return confirm('¿Estás seguro de eliminar este activo permanentemente?');">
@@ -179,6 +187,64 @@ if (class_exists('Activo')) {
             </div>
         </div>
     </div>
+
+    <script>
+        // Recibimos los datos de PHP y los pasamos a JavaScript
+        const datosEstados = <?php echo $jsonEstados; ?>;
+        const datosSedes = <?php echo $jsonSedes; ?>;
+
+        // 1. Gráfico de Pastel (Estados)
+        if(datosEstados.length > 0) {
+            const labelsEstados = datosEstados.map(d => d.estado);
+            const dataEstados = datosEstados.map(d => d.cantidad);
+            
+            // Asignar colores según el estado
+            const coloresEstados = labelsEstados.map(estado => {
+                if(estado === 'Operativo') return '#198754'; // Verde
+                if(estado === 'Dañado') return '#dc3545'; // Rojo
+                if(estado === 'Mantenimiento') return '#ffc107'; // Amarillo
+                return '#6c757d'; // Gris
+            });
+
+            new Chart(document.getElementById('graficoEstados'), {
+                type: 'doughnut',
+                data: {
+                    labels: labelsEstados,
+                    datasets: [{
+                        data: dataEstados,
+                        backgroundColor: coloresEstados,
+                        borderWidth: 1
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // 2. Gráfico de Barras (Sedes)
+        if(datosSedes.length > 0) {
+            const labelsSedes = datosSedes.map(d => d.sede);
+            const dataSedes = datosSedes.map(d => d.cantidad);
+
+            new Chart(document.getElementById('graficoSedes'), {
+                type: 'bar',
+                data: {
+                    labels: labelsSedes,
+                    datasets: [{
+                        label: 'Equipos Registrados',
+                        data: dataSedes,
+                        backgroundColor: '#0d6efd',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
