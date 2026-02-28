@@ -30,15 +30,22 @@ if ($id_sede_seleccionada) {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matriz 09 - Gestión Campamento</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        /* Pequeño ajuste para que el título no desborde en celulares muy pequeños */
+        @media (max-width: 576px) {
+            .navbar-brand { font-size: 1.1rem !important; }
+        }
+    </style>
 </head>
 <body class="bg-light">
 
     <nav class="navbar navbar-dark bg-dark mb-4 shadow">
         <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1 fw-bold">
+            <span class="navbar-brand mb-0 h1 fw-bold text-truncate">
                 <i class="bi bi-table"></i> EC-IT-F-09: GESTIÓN DE CAMPAMENTO
             </span>
             <div class="d-flex">
@@ -51,7 +58,7 @@ if ($id_sede_seleccionada) {
         </div>
     </nav>
 
-    <div class="container-fluid px-4">
+    <div class="container-fluid px-2 px-md-4">
         
         <?php if(isset($_GET['msg'])): ?>
             <?php if($_GET['msg']=='ok'): ?>
@@ -71,7 +78,7 @@ if ($id_sede_seleccionada) {
             <div class="card mb-4 shadow-sm border-0">
                 <div class="card-body bg-white rounded">
                     <form action="" method="GET" class="row align-items-end">
-                        <div class="col-md-5">
+                        <div class="col-12 col-md-5 mb-2 mb-md-0">
                             <label class="form-label fw-bold">Seleccione Proyecto:</label>
                             <select name="sede" class="form-select">
                                 <option value="">-- Seleccione --</option>
@@ -82,7 +89,7 @@ if ($id_sede_seleccionada) {
                                 <?php endwhile; ?>
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-12 col-md-2">
                             <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Ver</button>
                         </div>
                     </form>
@@ -96,15 +103,16 @@ if ($id_sede_seleccionada) {
 
         <?php if ($datos_matriz): ?>
         <div class="card shadow">
-            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-bold">INVENTARIO EN SITIO</h6>
-                <a href="generar_matriz_pdf.php?sede=<?php echo $id_sede_seleccionada; ?>" target="_blank" class="btn btn-light btn-sm fw-bold text-success">
+            <div class="card-header bg-success text-white d-flex flex-wrap justify-content-between align-items-center py-2">
+                <h6 class="mb-0 fw-bold mt-1">INVENTARIO EN SITIO</h6>
+                <a href="generar_matriz_pdf.php?sede=<?php echo $id_sede_seleccionada; ?>" target="_blank" class="btn btn-light btn-sm fw-bold text-success mt-1">
                     <i class="bi bi-file-earmark-pdf-fill"></i> PDF OFICIAL
                 </a>
             </div>
+            
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped mb-0 text-center align-middle" style="font-size: 0.85rem;">
+                    <table class="table table-bordered table-striped mb-0 text-center align-middle" style="font-size: 0.85rem; min-width: 700px;">
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
@@ -146,22 +154,28 @@ if ($id_sede_seleccionada) {
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary" 
-                                            title="Editar Estado/Responsable"
-                                            onclick="abrirModal(
-                                                '<?php echo $fila['id_activo']; ?>', 
-                                                '<?php echo $fila['id_responsable']; ?>', 
-                                                '<?php echo $fila['estado']; ?>',
-                                                '<?php echo $fila['necesita_insumos']; ?>'
-                                            )">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </button>
+                                    <?php if($_SESSION['id_rol'] != 3): ?>
+                                        <button class="btn btn-sm btn-primary" 
+                                                title="Editar Estado/Responsable"
+                                                onclick="abrirModal(
+                                                    '<?php echo $fila['id_activo']; ?>', 
+                                                    '<?php echo $fila['id_responsable']; ?>', 
+                                                    '<?php echo $fila['estado']; ?>',
+                                                    '<?php echo $fila['necesita_insumos']; ?>'
+                                                )">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
 
-                                    <button class="btn btn-sm btn-warning" 
-                                            title="Devolver / Transferir a otra Sede"
-                                            onclick="abrirModalTransferir('<?php echo $fila['id_activo']; ?>', '<?php echo $fila['equipo']; ?>')">
-                                        <i class="bi bi-truck"></i>
-                                    </button>
+                                        <button class="btn btn-sm btn-warning" 
+                                                title="Devolver / Transferir a otra Sede"
+                                                onclick="abrirModalTransferir('<?php echo $fila['id_activo']; ?>', '<?php echo $fila['equipo']; ?>')">
+                                            <i class="bi bi-truck"></i>
+                                        </button>
+                                    <?php else: ?>
+                                        <span class="badge bg-light text-muted border py-2 px-3" title="No tienes permisos para modificar">
+                                            <i class="bi bi-lock-fill"></i> Solo Lectura
+                                        </span>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endwhile; 
@@ -176,6 +190,7 @@ if ($id_sede_seleccionada) {
         <?php endif; ?>
     </div>
 
+    <?php if($_SESSION['id_rol'] != 3): ?>
     <div class="modal fade" id="modalEditar" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -200,7 +215,7 @@ if ($id_sede_seleccionada) {
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3 mb-md-0">
                                 <label class="form-label fw-bold">Estado:</label>
                                 <select name="nuevo_estado" id="modal_estado" class="form-select">
                                     <option value="Operativo">Operativo</option>
@@ -208,7 +223,7 @@ if ($id_sede_seleccionada) {
                                     <option value="En Bodega">En Bodega</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label class="form-label fw-bold">¿Necesita Insumos?</label>
                                 <select name="necesita_insumos" id="modal_insumos" class="form-select">
                                     <option value="NO">No</option>
@@ -280,6 +295,7 @@ if ($id_sede_seleccionada) {
             </div>
         </div>
     </div>
+    <?php endif; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>

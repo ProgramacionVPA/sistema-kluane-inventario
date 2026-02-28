@@ -14,16 +14,23 @@ $totalActivos = 0;
 $resultado = null;
 $jsonEstados = "[]";
 $jsonSedes = "[]";
+$esColaborador = ($_SESSION['id_rol'] == 3); // Verificamos si es Rol 3
 
-// Intentar cargar datos
+// Intentar cargar datos dependiendo del ROL
 if (class_exists('Activo')) {
     $activoModel = new Activo();
-    $resultado = $activoModel->leerTodo();
-    $totalActivos = $activoModel->contarTotal();
     
-    // Obtenemos los datos para los gráficos y los convertimos a JSON
-    $jsonEstados = json_encode($activoModel->contarPorEstado());
-    $jsonSedes = json_encode($activoModel->contarPorSede());
+    if ($esColaborador) {
+        // Si es colaborador, solo ve SUS equipos
+        $resultado = $activoModel->leerPorUsuario($_SESSION['id_usuario']);
+        $totalActivos = $resultado->rowCount();
+    } else {
+        // Si es Admin (1) o Técnico (2), ve TODOS los equipos y gráficos
+        $resultado = $activoModel->leerTodo();
+        $totalActivos = $activoModel->contarTotal();
+        $jsonEstados = json_encode($activoModel->contarPorEstado());
+        $jsonSedes = json_encode($activoModel->contarPorSede());
+    }
 }
 ?>
 
@@ -31,46 +38,90 @@ if (class_exists('Activo')) {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Principal - Kluane</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Ajustes finos para celulares */
+        @media (max-width: 768px) {
+            .navbar-brand { font-size: 1.1rem; }
+            .user-badge { display: none; } /* Ocultar el texto de admin en pantallas muy chicas */
+            .action-buttons { flex-direction: column; width: 100%; gap: 10px; }
+            .action-buttons a { width: 100%; }
+        }
+    </style>
 </head>
 <body class="bg-light">
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="#">KLUANE INVENTARIO</a>
-            <div class="d-flex text-white align-items-center">
-                <span class="me-3"><i class="bi bi-person-circle"></i> <?php echo $_SESSION['nombre_completo']; ?></span>
-                <a href="usuarios.php" class="btn btn-outline-light btn-sm me-2">
-                    <i class="bi bi-people-fill"></i> Usuarios
-                </a>
-                <a href="../../controllers/Logout.php" class="btn btn-danger btn-sm">Salir</a>
+            <a class="navbar-brand fw-bold" href="#"><i class="bi bi-box-seam me-2"></i> KLUANE INVENTARIO</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarText">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    </ul>
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center mt-3 mt-lg-0">
+                    <span class="text-white me-3 mb-2 mb-lg-0">
+                        <i class="bi bi-person-circle"></i> <?php echo $_SESSION['nombre_completo']; ?>
+                        <small class="badge bg-light text-primary ms-1 user-badge"><?php echo $esColaborador ? 'Colaborador' : 'Admin/Tec'; ?></small>
+                    </span>
+                    
+                    <?php if($_SESSION['id_rol'] == 1): ?>
+                        <a href="usuarios.php" class="btn btn-outline-light btn-sm me-0 me-lg-2 mb-2 mb-lg-0">
+                            <i class="bi bi-people-fill"></i> Usuarios
+                        </a>
+                    <?php endif; ?>
+                    
+                    <a href="../../controllers/Logout.php" class="btn btn-danger btn-sm">
+                        <i class="bi bi-box-arrow-right"></i> Salir
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-4">
+    <div class="container-fluid container-lg mt-4 px-3">
         
         <div class="row mb-4">
             <div class="col-md-12">
                 <div class="card shadow-sm border-0">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <h4 class="mb-0 text-primary"><i class="bi bi-speedometer2"></i> Dashboard Ejecutivo y Matriz 07</h4>
-                            <p class="text-muted mb-0">Gestión centralizada de equipos y métricas en tiempo real</p>
+                    <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                        <div class="mb-3 mb-md-0 text-center text-md-start">
+                            <h4 class="mb-0 text-primary">
+                                <i class="bi bi-<?php echo $esColaborador ? 'laptop' : 'speedometer2'; ?>"></i> 
+                                <?php echo $esColaborador ? 'Mis Equipos Asignados' : 'Dashboard Ejecutivo y Matriz 07'; ?>
+                            </h4>
+                            <p class="text-muted mb-0 small">
+                                <?php echo $esColaborador ? 'Consulta el estado de las herramientas a tu cargo' : 'Gestión centralizada de equipos y métricas en tiempo real'; ?>
+                            </p>
                         </div>
-                        <a href="nuevo_activo.php" class="btn btn-success"><i class="bi bi-plus-lg"></i> Nuevo Activo</a>
+                        
+                        <?php if(!$esColaborador): ?>
+                        <div class="d-flex action-buttons">
+                            <a href="ver_matriz.php" class="btn btn-outline-primary shadow-sm me-md-2">
+                                <i class="bi bi-table"></i> Ver Matriz 09
+                            </a>
+                            <a href="nuevo_activo.php" class="btn btn-success shadow-sm">
+                                <i class="bi bi-plus-lg"></i> Nuevo Activo
+                            </a>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="row mb-4">
-            <div class="col-md-5">
+        <?php if(!$esColaborador): ?>
+        <div class="row mb-4 g-3">
+            <div class="col-12 col-lg-5">
                 <div class="card shadow-sm border-0 h-100">
-                    <div class="card-header bg-white fw-bold text-secondary">
+                    <div class="card-header bg-white fw-bold text-secondary text-center">
                         Distribución por Estado
                     </div>
                     <div class="card-body">
@@ -79,10 +130,10 @@ if (class_exists('Activo')) {
                 </div>
             </div>
             
-            <div class="col-md-7">
+            <div class="col-12 col-lg-7">
                 <div class="card shadow-sm border-0 h-100">
-                    <div class="card-header bg-white fw-bold text-secondary">
-                        Equipos por Proyecto / Sede (Total: <?php echo $totalActivos; ?> equipos)
+                    <div class="card-header bg-white fw-bold text-secondary text-center">
+                        Equipos por Proyecto (Total: <?php echo $totalActivos; ?> equipos)
                     </div>
                     <div class="card-body">
                         <canvas id="graficoSedes" style="max-height: 250px;"></canvas>
@@ -90,41 +141,42 @@ if (class_exists('Activo')) {
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
-        <div class="card shadow-sm">
-            <div class="card-body">
+        <div class="card shadow-sm border-0 mb-5">
+            <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle">
+                    <table class="table table-hover align-middle mb-0" style="min-width: 900px;">
                         <thead class="table-light">
                             <tr>
-                                <th>Código KLU</th>
+                                <th class="ps-3 py-3">Código KLU</th>
                                 <th>Equipo</th>
                                 <th>Serie</th>
                                 <th>Categoría</th>
                                 <th>Sede</th>
                                 <th>Custodio</th> 
                                 <th>Estado</th>
-                                <th>Acciones</th>
+                                <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php 
-                            if ($resultado) {
+                            if ($resultado && $resultado->rowCount() > 0) {
                                 while ($fila = $resultado->fetch(PDO::FETCH_ASSOC)) { 
                             ?>
                                 <tr>
-                                    <td class="fw-bold text-primary"><?php echo $fila['codigo_interno']; ?></td>
+                                    <td class="ps-3 fw-bold text-primary"><?php echo $fila['codigo_interno']; ?></td>
                                     <td>
                                         <div class="fw-bold"><?php echo $fila['marca']; ?></div>
                                         <small class="text-muted"><?php echo $fila['modelo']; ?></small>
                                     </td>
-                                    <td><?php echo $fila['serie']; ?></td>
+                                    <td><small class="text-secondary"><?php echo $fila['serie']; ?></small></td>
                                     <td><span class="badge bg-secondary"><?php echo $fila['categoria']; ?></span></td>
                                     <td><?php echo $fila['sede']; ?></td>
                                     <td>
                                         <?php if($fila['responsable']): ?>
-                                            <span class="badge bg-info text-dark">
-                                                <i class="bi bi-person"></i> <?php echo $fila['responsable']; ?>
+                                            <span class="badge bg-info text-dark shadow-sm">
+                                                <i class="bi bi-person-fill"></i> <?php echo $fila['responsable']; ?>
                                             </span>
                                         <?php else: ?>
                                             <span class="badge bg-light text-muted border">Sin Asignar</span>
@@ -132,53 +184,59 @@ if (class_exists('Activo')) {
                                     </td>
 
                                     <td>
-                                        <?php if($fila['estado'] == 'Operativo'): ?>
-                                            <span class="badge bg-success">Operativo</span>
-                                        <?php elseif($fila['estado'] == 'Mantenimiento'): ?>
-                                            <span class="badge bg-warning text-dark">Mantenimiento</span>
-                                        <?php else: ?>
-                                            <span class="badge bg-danger"><?php echo $fila['estado']; ?></span>
-                                        <?php endif; ?>
+                                        <?php 
+                                            $estadoClass = 'bg-success';
+                                            if($fila['estado'] == 'Mantenimiento') $estadoClass = 'bg-warning text-dark';
+                                            elseif($fila['estado'] == 'Dañado' || $fila['estado'] == 'Baja') $estadoClass = 'bg-danger';
+                                            echo "<span class='badge $estadoClass shadow-sm'>" . $fila['estado'] . "</span>";
+                                        ?>
                                     </td>
                         
-                                    <td>
-                                        <a href="asignar.php?id=<?php echo $fila['id_activo']; ?>" 
-                                           class="btn btn-sm btn-outline-info" title="Asignar">
-                                           <i class="bi bi-person-check-fill"></i>
-                                        </a>
-                                        
-                                        <a href="editar_activo.php?id=<?php echo $fila['id_activo']; ?>" 
-                                           class="btn btn-sm btn-outline-primary">
-                                           <i class="bi bi-pencil"></i>
-                                        </a>
-                                        
-                                        <a href="../../controllers/ActivoController.php?accion=eliminar&id=<?php echo $fila['id_activo']; ?>" 
-                                           class="btn btn-sm btn-outline-danger" 
-                                           onclick="return confirm('¿Estás seguro de eliminar este activo permanentemente?');">
-                                           <i class="bi bi-trash"></i>
-                                        </a>
+                                    <td class="text-center">
+                                        <div class="btn-group shadow-sm">
+                                            
+                                            <?php if(!$esColaborador): ?>
+                                                <a href="asignar.php?id=<?php echo $fila['id_activo']; ?>" 
+                                                   class="btn btn-sm btn-outline-info" title="Asignar">
+                                                   <i class="bi bi-person-check-fill"></i>
+                                                </a>
+                                                
+                                                <a href="editar_activo.php?id=<?php echo $fila['id_activo']; ?>" 
+                                                   class="btn btn-sm btn-outline-primary" title="Editar Equipo">
+                                                   <i class="bi bi-pencil"></i>
+                                                </a>
+                                                
+                                                <?php if($fila['responsable'] || $fila['total_movimientos'] > 0): ?>
+                                                    <button class="btn btn-sm btn-light text-muted border-start" disabled title="Bloqueado por Auditoría">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                <?php else: ?>
+                                                    <a href="../../controllers/ActivoController.php?accion=eliminar&id=<?php echo $fila['id_activo']; ?>" 
+                                                       class="btn btn-sm btn-outline-danger" 
+                                                       onclick="return confirm('¿Estás seguro de eliminar este activo? Solo si fue un error de tipeo.');"
+                                                       title="Eliminar Activo">
+                                                       <i class="bi bi-trash"></i>
+                                                    </a>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                            <a href="historial.php?id=<?php echo $fila['id_activo']; ?>" 
+                                               class="btn btn-sm btn-outline-secondary" title="Ver Historial">
+                                               <i class="bi bi-clock-history"></i>
+                                            </a>
 
-                                        <a href="historial.php?id=<?php echo $fila['id_activo']; ?>" 
-                                           class="btn btn-sm btn-outline-secondary" title="Ver Historial">
-                                           <i class="bi bi-clock-history"></i>
-                                        </a>
-
-                                        <a href="generar_acta.php?id=<?php echo $fila['id_activo']; ?>" 
-                                            target="_blank" 
-                                            class="btn btn-sm btn-outline-danger" 
-                                            title="Imprimir Acta de Entrega">
-                                            <i class="bi bi-file-earmark-pdf-fill"></i> PDF
-                                        </a>
-
-                                        <a href="ver_matriz.php" class="btn btn-outline-primary mb-3">
-                                            <i class="bi bi-table"></i> Ver Matriz 09 (Campamento)
-                                        </a>
+                                            <a href="generar_acta.php?id=<?php echo $fila['id_activo']; ?>" 
+                                                target="_blank" 
+                                                class="btn btn-sm btn-outline-danger" 
+                                                title="Imprimir Acta">
+                                                <i class="bi bi-file-earmark-pdf-fill"></i> PDF
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php 
-                                } // Fin del while
+                                } 
                             } else {
-                                echo "<tr><td colspan='8' class='text-center'>No hay activos registrados o no se pudo cargar el modelo.</td></tr>";
+                                echo "<tr><td colspan='8' class='text-center py-5'><i class='bi bi-inbox fs-1 text-muted'></i><br>No hay activos registrados.</td></tr>";
                             }
                             ?>
                         </tbody>
@@ -188,22 +246,20 @@ if (class_exists('Activo')) {
         </div>
     </div>
 
+    <?php if(!$esColaborador): ?>
     <script>
-        // Recibimos los datos de PHP y los pasamos a JavaScript
+        // Mismo código de gráficos sin cambios (omitido para brevedad visual, pero sigue funcionando)
         const datosEstados = <?php echo $jsonEstados; ?>;
         const datosSedes = <?php echo $jsonSedes; ?>;
 
-        // 1. Gráfico de Pastel (Estados)
         if(datosEstados.length > 0) {
             const labelsEstados = datosEstados.map(d => d.estado);
             const dataEstados = datosEstados.map(d => d.cantidad);
-            
-            // Asignar colores según el estado
             const coloresEstados = labelsEstados.map(estado => {
-                if(estado === 'Operativo') return '#198754'; // Verde
-                if(estado === 'Dañado') return '#dc3545'; // Rojo
-                if(estado === 'Mantenimiento') return '#ffc107'; // Amarillo
-                return '#6c757d'; // Gris
+                if(estado === 'Operativo') return '#198754';
+                if(estado === 'Dañado' || estado === 'Baja') return '#dc3545';
+                if(estado === 'Mantenimiento') return '#ffc107';
+                return '#6c757d';
             });
 
             new Chart(document.getElementById('graficoEstados'), {
@@ -220,7 +276,6 @@ if (class_exists('Activo')) {
             });
         }
 
-        // 2. Gráfico de Barras (Sedes)
         if(datosSedes.length > 0) {
             const labelsSedes = datosSedes.map(d => d.sede);
             const dataSedes = datosSedes.map(d => d.cantidad);
@@ -245,6 +300,7 @@ if (class_exists('Activo')) {
             });
         }
     </script>
+    <?php endif; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

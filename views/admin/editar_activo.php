@@ -26,17 +26,18 @@ if (!$activo) {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Activo - Kluane</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 
-    <div class="container mt-5">
+    <div class="container mt-5 px-3">
         <div class="row justify-content-center">
-            <div class="col-md-8">
+            <div class="col-12 col-md-8 col-lg-6">
                 <div class="card shadow">
                     <div class="card-header bg-warning text-dark">
-                        <h4 class="mb-0">✏️ Editar Activo: <?php echo $activo['codigo_interno']; ?></h4>
+                        <h4 class="mb-0">✏️ Editar Activo: <?php echo htmlspecialchars($activo['codigo_interno']); ?></h4>
                     </div>
                     <div class="card-body">
                         <form action="../../controllers/ActivoController.php?accion=editar" method="POST">
@@ -44,28 +45,28 @@ if (!$activo) {
                             <input type="hidden" name="id_activo" value="<?php echo $activo['id_activo']; ?>">
 
                             <div class="row mb-3">
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6 mb-3 mb-md-0">
                                     <label class="form-label">Código Interno</label>
-                                    <input type="text" name="codigo" class="form-control" value="<?php echo $activo['codigo_interno']; ?>" required>
+                                    <input type="text" name="codigo" class="form-control" value="<?php echo htmlspecialchars($activo['codigo_interno']); ?>" required>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Número de Serie</label>
-                                    <input type="text" name="serie" class="form-control" value="<?php echo $activo['serie']; ?>" required>
+                                    <input type="text" name="serie" class="form-control" value="<?php echo htmlspecialchars($activo['serie']); ?>" required>
                                 </div>
                             </div>
 
                             <div class="row mb-3">
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6 mb-3 mb-md-0">
                                     <label class="form-label">Marca</label>
-                                    <input type="text" name="marca" class="form-control" value="<?php echo $activo['marca']; ?>" required>
+                                    <input type="text" name="marca" class="form-control" value="<?php echo htmlspecialchars($activo['marca']); ?>" required>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Modelo</label>
-                                    <input type="text" name="modelo" class="form-control" value="<?php echo $activo['modelo']; ?>" required>
+                                    <input type="text" name="modelo" class="form-control" value="<?php echo htmlspecialchars($activo['modelo']); ?>" required>
                                 </div>
                             </div>
 
-                            <div class="mb-3">
+                            <div class="mb-4">
                                 <label class="form-label">Estado Actual</label>
                                 <select name="estado" class="form-select">
                                     <option value="Operativo" <?php if($activo['estado'] == 'Operativo') echo 'selected'; ?>>Operativo</option>
@@ -76,7 +77,7 @@ if (!$activo) {
                             </div>
 
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <a href="dashboard.php" class="btn btn-secondary me-md-2">Cancelar</a>
+                                <a href="dashboard.php" class="btn btn-secondary me-md-2 mb-2 mb-md-0">Cancelar</a>
                                 <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                             </div>
 

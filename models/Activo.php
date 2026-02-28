@@ -12,7 +12,7 @@ class Activo {
 
     // Función para LEER todo el inventario (Matriz 07)
     public function leerTodo() {
-        // Hacemos un JOIN para que no salgan números, sino nombres reales
+        // Hacemos un JOIN y añadimos una subconsulta para contar los movimientos (Auditoría Estricta)
         $query = "SELECT 
                     a.id_activo,
                     a.codigo_interno,
@@ -22,7 +22,8 @@ class Activo {
                     a.estado,
                     c.nombre as categoria,
                     s.nombre as sede,
-                    u.nombre_completo as responsable
+                    u.nombre_completo as responsable,
+                    (SELECT COUNT(*) FROM historial_movimientos h WHERE h.id_activo = a.id_activo) as total_movimientos
                   FROM " . $this->table_name . " a
                   LEFT JOIN categorias c ON a.id_categoria = c.id_categoria
                   LEFT JOIN sedes s ON a.id_sede_actual = s.id_sede
@@ -59,10 +60,9 @@ class Activo {
             $stmt->bindParam(":categoria", $datos['categoria']);
             $stmt->bindParam(":sede", $datos['sede']);
             
-            // CORRECCIÓN IMPORTANTE: Usamos 'id_usuario' que es la correcta
-            // Si la sesión no está iniciada (caso raro), ponemos NULL para que no falle
-            $usuario_responsable = isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario'] : null;
-            $stmt->bindParam(":usuario", $usuario_responsable);
+            // CORRECCIÓN: Un equipo nuevo entra a Bodega (Sin Asignar), responsable es NULL.
+            $usuario_responsable = null;
+            $stmt->bindParam(":usuario", $usuario_responsable, PDO::PARAM_NULL);
 
             if($stmt->execute()) {
                 return true;
@@ -70,7 +70,11 @@ class Activo {
             return false;
 
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            // VERIFICAMOS SI EL ERROR ES POR DUPLICADO (SQLSTATE 23000)
+            if ($e->getCode() == 23000) {
+                return "DUPLICADO"; 
+            }
+            // Si es otro error raro, retorna falso
             return false;
         }
     }
@@ -84,7 +88,7 @@ class Activo {
         return $row['total'];
     }
 
-    // Función para ELIMINAR un activo por su ID
+    // Función para ELIMINAR un activo por su ID (Mantenemos la regla estricta de base de datos)
     public function eliminar($id) {
         try {
             $query = "DELETE FROM " . $this->table_name . " WHERE id_activo = :id";
@@ -193,7 +197,6 @@ class Activo {
         return $stmt;
     }
     
-
     // 2. Contar activos por Estado (Para el gráfico de Pastel)
     public function contarPorEstado() {
         $query = "SELECT estado, COUNT(*) as cantidad FROM " . $this->table_name . " GROUP BY estado";
@@ -212,5 +215,7 @@ class Activo {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    
 }
 ?>

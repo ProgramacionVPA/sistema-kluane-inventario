@@ -27,8 +27,14 @@ if (isset($_GET['accion'])) {
             'estado' => $_POST['estado']
         ];
 
-        if ($activoModel->crear($datos)) {
+        // Guardamos la respuesta del modelo en una variable para evaluarla
+        $resultado = $activoModel->crear($datos);
+
+        if ($resultado === true) {
             header("Location: ../views/admin/dashboard.php?msg=guardado");
+        } elseif ($resultado === "DUPLICADO") {
+            // Si el modelo dice que es duplicado, lo mandamos de vuelta al formulario con el error
+            header("Location: ../views/admin/nuevo_activo.php?error=duplicado");
         } else {
             echo "Hubo un error al guardar el activo.";
         }
