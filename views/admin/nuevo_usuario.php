@@ -1,10 +1,6 @@
 <?php
-session_start();
-if (!isset($_SESSION['id_usuario']) || $_SESSION['id_rol'] != 1) { header("Location: ../auth/login.php"); exit(); }
-require_once '../../models/Usuario.php';
-$uModel = new Usuario();
-$roles = $uModel->obtenerRoles();
-$sedes = $uModel->obtenerSedes();
+// Delegamos toda la lógica inicial al controlador
+require_once '../../controllers/CargarNuevoUsuarioController.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -44,7 +40,7 @@ $sedes = $uModel->obtenerSedes();
                             <select name="rol" class="form-select" required>
                                 <option value="">-- Seleccionar --</option>
                                 <?php while($r = $roles->fetch(PDO::FETCH_ASSOC)): ?>
-                                    <option value="<?php echo $r['id_rol']; ?>"><?php echo $r['nombre_rol']; ?></option>
+                                    <option value="<?php echo $r['id_rol']; ?>"><?php echo htmlspecialchars($r['nombre_rol']); ?></option>
                                 <?php endwhile; ?>
                             </select>
                         </div>
@@ -53,7 +49,7 @@ $sedes = $uModel->obtenerSedes();
                             <select name="sede" class="form-select" required>
                                 <option value="">-- Seleccionar --</option>
                                 <?php while($s = $sedes->fetch(PDO::FETCH_ASSOC)): ?>
-                                    <option value="<?php echo $s['id_sede']; ?>"><?php echo $s['nombre']; ?></option>
+                                    <option value="<?php echo $s['id_sede']; ?>"><?php echo htmlspecialchars($s['nombre']); ?></option>
                                 <?php endwhile; ?>
                             </select>
                         </div>

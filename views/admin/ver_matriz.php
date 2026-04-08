@@ -1,31 +1,7 @@
 <?php
-session_start();
-if (!isset($_SESSION['id_usuario'])) {
-    header("Location: ../auth/login.php");
-    exit();
-}
-
-require_once '../../models/Matriz.php';
-$matrizModel = new Matriz();
-
-$sedes = $matrizModel->obtenerSedes();
-
-// Obtenemos TODOS los usuarios para ponerlos en el modal de edición
-$lista_usuarios = $matrizModel->obtenerUsuarios()->fetchAll(PDO::FETCH_ASSOC);
-
-$id_sede_seleccionada = '';
-if ($_SESSION['id_rol'] == 2) {
-    $id_sede_seleccionada = $_SESSION['id_sede'];
-} elseif (isset($_GET['sede'])) {
-    $id_sede_seleccionada = $_GET['sede'];
-}
-
-$datos_matriz = null;
-if ($id_sede_seleccionada) {
-    $datos_matriz = $matrizModel->obtenerDatosMatriz($id_sede_seleccionada);
-}
+// Delegamos el trabajo al controlador
+require_once '../../controllers/CargarMatrizController.php';
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -34,12 +10,7 @@ if ($id_sede_seleccionada) {
     <title>Matriz 09 - Gestión Campamento</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <style>
-        /* Pequeño ajuste para que el título no desborde en celulares muy pequeños */
-        @media (max-width: 576px) {
-            .navbar-brand { font-size: 1.1rem !important; }
-        }
-    </style>
+    <link rel="stylesheet" href="../../public/css/style.css">
 </head>
 <body class="bg-light">
 
@@ -61,12 +32,12 @@ if ($id_sede_seleccionada) {
     <div class="container-fluid px-2 px-md-4">
         
         <?php if(isset($_GET['msg'])): ?>
-            <?php if($_GET['msg']=='ok'): ?>
+            <?php if($_GET['msg'] == 'ok'): ?>
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     <strong>¡Cambios Guardados!</strong> La matriz se ha actualizado correctamente.
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
-            <?php elseif($_GET['msg']=='transfer'): ?>
+            <?php elseif($_GET['msg'] == 'transfer'): ?>
                 <div class="alert alert-warning alert-dismissible fade show" role="alert">
                     <i class="bi bi-truck"></i> <strong>¡Transferencia Exitosa!</strong> El equipo ha sido enviado a la otra sede y ya no está en tu lista.
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -82,11 +53,11 @@ if ($id_sede_seleccionada) {
                             <label class="form-label fw-bold">Seleccione Proyecto:</label>
                             <select name="sede" class="form-select">
                                 <option value="">-- Seleccione --</option>
-                                <?php $sedes->execute(); while($s = $sedes->fetch(PDO::FETCH_ASSOC)): ?>
+                                <?php foreach($lista_sedes as $s): ?>
                                     <option value="<?php echo $s['id_sede']; ?>" <?php if($id_sede_seleccionada == $s['id_sede']) echo 'selected'; ?>>
-                                        <?php echo $s['nombre']; ?>
+                                        <?php echo htmlspecialchars($s['nombre']); ?>
                                     </option>
-                                <?php endwhile; ?>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                         <div class="col-12 col-md-2">
@@ -97,11 +68,11 @@ if ($id_sede_seleccionada) {
             </div>
         <?php else: ?>
             <div class="alert alert-info shadow-sm mb-4">
-                <strong>Hola, <?php echo $_SESSION['nombre_completo']; ?>.</strong> Gestiona los activos de tu campamento aquí.
+                <strong>Hola, <?php echo htmlspecialchars($_SESSION['nombre_completo']); ?>.</strong> Gestiona los activos de tu campamento aquí.
             </div>
         <?php endif; ?>
 
-        <?php if ($datos_matriz): ?>
+        <?php if ($id_sede_seleccionada): ?>
         <div class="card shadow">
             <div class="card-header bg-success text-white d-flex flex-wrap justify-content-between align-items-center py-2">
                 <h6 class="mb-0 fw-bold mt-1">INVENTARIO EN SITIO</h6>
@@ -126,24 +97,24 @@ if ($id_sede_seleccionada) {
                         <tbody>
                             <?php 
                             $contador = 1;
-                            if($datos_matriz->rowCount() > 0):
-                                while($fila = $datos_matriz->fetch(PDO::FETCH_ASSOC)): 
+                            if(count($filas_matriz) > 0):
+                                foreach($filas_matriz as $fila): 
                             ?>
                             <tr>
                                 <td><?php echo $contador++; ?></td>
                                 <td class="text-start">
-                                    <span class="fw-bold"><?php echo $fila['equipo']; ?></span><br>
-                                    <small class="text-muted"><?php echo $fila['serie']; ?></small>
+                                    <span class="fw-bold"><?php echo htmlspecialchars($fila['equipo']); ?></span><br>
+                                    <small class="text-muted"><?php echo htmlspecialchars($fila['serie']); ?></small>
                                 </td>
                                 <td class="text-start">
-                                    <i class="bi bi-person-fill"></i> <?php echo $fila['responsable'] ? $fila['responsable'] : '<span class="text-danger">Sin Asignar</span>'; ?><br>
-                                    <span class="badge bg-secondary"><?php echo $fila['area']; ?></span>
+                                    <i class="bi bi-person-fill"></i> <?php echo $fila['responsable'] ? htmlspecialchars($fila['responsable']) : '<span class="text-danger">Sin Asignar</span>'; ?><br>
+                                    <span class="badge bg-secondary"><?php echo htmlspecialchars($fila['area']); ?></span>
                                 </td>
                                 <td>
                                     <?php if($fila['estado'] == 'Operativo'): ?>
                                         <span class="badge bg-success">OPERATIVO</span>
                                     <?php else: ?>
-                                        <span class="badge bg-danger"><?php echo $fila['estado']; ?></span>
+                                        <span class="badge bg-danger"><?php echo htmlspecialchars($fila['estado']); ?></span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
@@ -168,7 +139,7 @@ if ($id_sede_seleccionada) {
 
                                         <button class="btn btn-sm btn-warning" 
                                                 title="Devolver / Transferir a otra Sede"
-                                                onclick="abrirModalTransferir('<?php echo $fila['id_activo']; ?>', '<?php echo $fila['equipo']; ?>')">
+                                                onclick="abrirModalTransferir('<?php echo $fila['id_activo']; ?>', '<?php echo htmlspecialchars($fila['equipo'], ENT_QUOTES); ?>')">
                                             <i class="bi bi-truck"></i>
                                         </button>
                                     <?php else: ?>
@@ -178,9 +149,10 @@ if ($id_sede_seleccionada) {
                                     <?php endif; ?>
                                 </td>
                             </tr>
-                            <?php endwhile; 
+                            <?php 
+                                endforeach; 
                             else: ?>
-                                <tr><td colspan="6" class="p-4">No hay datos.</td></tr>
+                                <tr><td colspan="6" class="p-4 text-muted">No hay activos registrados en este proyecto.</td></tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -208,7 +180,7 @@ if ($id_sede_seleccionada) {
                                 <option value="">-- Sin Asignar / En Bodega --</option>
                                 <?php foreach($lista_usuarios as $u): ?>
                                     <option value="<?php echo $u['id_usuario']; ?>">
-                                        <?php echo $u['nombre_completo'] . " (" . $u['area'] . ")"; ?>
+                                        <?php echo htmlspecialchars($u['nombre_completo']) . " (" . htmlspecialchars($u['area']) . ")"; ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -265,15 +237,11 @@ if ($id_sede_seleccionada) {
                             <label class="form-label fw-bold">Destino (Sede):</label>
                             <select name="id_sede_destino" class="form-select" required>
                                 <option value="">-- Seleccione Destino --</option>
-                                <?php 
-                                    // Reiniciamos el cursor de sedes para volver a usarlo
-                                    $sedes->execute(); 
-                                    while($s = $sedes->fetch(PDO::FETCH_ASSOC)): 
-                                ?>
+                                <?php foreach($lista_sedes as $s): ?>
                                     <option value="<?php echo $s['id_sede']; ?>">
-                                        <?php echo $s['nombre']; ?>
+                                        <?php echo htmlspecialchars($s['nombre']); ?>
                                     </option>
-                                <?php endwhile; ?>
+                                <?php endforeach; ?>
                             </select>
                             <div class="form-text">Si es devolución, selecciona "Matriz Quito".</div>
                         </div>
@@ -309,7 +277,6 @@ if ($id_sede_seleccionada) {
             myModal.show();
         }
 
-        // Nueva función para Transferir
         function abrirModalTransferir(id, nombre) {
             document.getElementById('trans_id_activo').value = id;
             document.getElementById('trans_nombre_equipo').innerText = nombre;

@@ -1,27 +1,7 @@
 <?php
-session_start();
-if (!isset($_SESSION['id_usuario'])) {
-    header("Location: ../auth/login.php");
-    exit();
-}
-
-// Recibir el ID que queremos editar
-if (!isset($_GET['id'])) {
-    header("Location: dashboard.php");
-    exit();
-}
-
-require_once '../../models/Activo.php';
-$activoModel = new Activo();
-$activo = $activoModel->obtenerPorId($_GET['id']);
-
-// Si no encuentra el activo, volver al dashboard
-if (!$activo) {
-    header("Location: dashboard.php?msg=no_encontrado");
-    exit();
-}
+// Delegamos toda la lógica inicial al controlador
+require_once '../../controllers/CargarEditarActivoController.php';
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>

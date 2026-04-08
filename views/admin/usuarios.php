@@ -1,14 +1,6 @@
 <?php
-session_start();
-
-if (!isset($_SESSION['id_usuario']) || $_SESSION['id_rol'] != 1) { 
-    header("Location: ../auth/login.php"); 
-    exit(); 
-}
-
-require_once '../../models/Usuario.php';
-$usuarioModel = new Usuario();
-$usuarios = $usuarioModel->leerTodo();
+// Delegamos toda la lógica al controlador
+require_once '../../controllers/CargarUsuariosController.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -61,8 +53,8 @@ $usuarios = $usuarioModel->leerTodo();
                         <tbody>
                             <?php while($row = $usuarios->fetch(PDO::FETCH_ASSOC)): ?>
                             <tr>
-                                <td class="ps-3 fw-bold"><?php echo $row['nombre_completo']; ?></td>
-                                <td><?php echo $row['email']; ?></td>
+                                <td class="ps-3 fw-bold"><?php echo htmlspecialchars($row['nombre_completo']); ?></td>
+                                <td><?php echo htmlspecialchars($row['email']); ?></td>
                                 <td class="text-center">
                                     <?php 
                                         if($row['id_rol'] == 1) echo '<span class="badge bg-dark">Admin</span>';
@@ -70,7 +62,7 @@ $usuarios = $usuarioModel->leerTodo();
                                         else echo '<span class="badge bg-secondary">Colaborador</span>';
                                     ?>
                                 </td>
-                                <td><?php echo $row['sede']; ?></td>
+                                <td><?php echo htmlspecialchars($row['sede']); ?></td>
                                 <td class="text-center">
                                     <div class="btn-group shadow-sm">
                                         <a href="editar_usuario.php?id=<?php echo $row['id_usuario']; ?>" class="btn btn-sm btn-outline-primary">

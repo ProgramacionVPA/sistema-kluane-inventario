@@ -6,40 +6,9 @@
     <title>Login - Sistema Kluane</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <style>
-        body {
-            background-color: #f0f2f5;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            /* Agregamos un padding para que no choque en celulares pequeños */
-            padding: 15px; 
-        }
-        .login-card {
-            width: 100%;
-            max-width: 400px;
-            padding: 2.5rem 2rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            background: white;
-            border-top: 5px solid #0d6efd; /* Un detalle visual corporativo */
-        }
-        .btn-kluane {
-            background-color: #0d6efd; 
-            color: white;
-            font-weight: bold;
-            padding: 0.6rem;
-        }
-        .btn-kluane:hover {
-            background-color: #0b5ed7;
-        }
-        .input-group-text {
-            background-color: #f8f9fa;
-        }
-    </style>
+    <link rel="stylesheet" href="../../public/css/style.css">
 </head>
-<body>
+<body class="login-body">
 
     <div class="login-card">
         <div class="text-center mb-4">

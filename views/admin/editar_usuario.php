@@ -1,11 +1,6 @@
 <?php
-session_start();
-if (!isset($_SESSION['id_usuario']) || $_SESSION['id_rol'] != 1) { header("Location: ../auth/login.php"); exit(); }
-require_once '../../models/Usuario.php';
-$uModel = new Usuario();
-$user = $uModel->obtenerPorId($_GET['id']);
-$roles = $uModel->obtenerRoles();
-$sedes = $uModel->obtenerSedes();
+// Delegamos toda la lógica inicial al controlador
+require_once '../../controllers/CargarEditarUsuarioController.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -18,7 +13,7 @@ $sedes = $uModel->obtenerSedes();
 <body class="bg-light">
     <div class="container mt-5 px-3">
         <div class="card shadow border-0 col-12 col-md-8 col-lg-6 mx-auto">
-            <div class="card-header bg-primary text-white"><h4>Editar: <?php echo $user['nombre_completo']; ?></h4></div>
+            <div class="card-header bg-primary text-white"><h4>Editar: <?php echo htmlspecialchars($user['nombre_completo']); ?></h4></div>
             <div class="card-body">
                 <form action="../../controllers/UsuarioController.php?accion=editar" method="POST">
                     <input type="hidden" name="id_usuario" value="<?php echo $user['id_usuario']; ?>">
@@ -26,11 +21,11 @@ $sedes = $uModel->obtenerSedes();
                     <div class="row mb-3">
                         <div class="col-12 col-md-6 mb-3 mb-md-0">
                             <label>Nombre</label>
-                            <input type="text" name="nombre" class="form-control" value="<?php echo $user['nombre_completo']; ?>" required>
+                            <input type="text" name="nombre" class="form-control" value="<?php echo htmlspecialchars($user['nombre_completo']); ?>" required>
                         </div>
                         <div class="col-12 col-md-6">
                             <label>Email</label>
-                            <input type="email" name="email" class="form-control" value="<?php echo $user['email']; ?>" required>
+                            <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($user['email']); ?>" required>
                         </div>
                     </div>
                     
@@ -44,7 +39,7 @@ $sedes = $uModel->obtenerSedes();
                             <label>Rol</label>
                             <select name="rol" class="form-select">
                                 <?php while($r = $roles->fetch(PDO::FETCH_ASSOC)): ?>
-                                    <option value="<?php echo $r['id_rol']; ?>" <?php if($r['id_rol']==$user['id_rol']) echo 'selected'; ?>><?php echo $r['nombre_rol']; ?></option>
+                                    <option value="<?php echo $r['id_rol']; ?>" <?php if($r['id_rol'] == $user['id_rol']) echo 'selected'; ?>><?php echo htmlspecialchars($r['nombre_rol']); ?></option>
                                 <?php endwhile; ?>
                             </select>
                         </div>
@@ -52,7 +47,7 @@ $sedes = $uModel->obtenerSedes();
                             <label>Sede</label>
                             <select name="sede" class="form-select">
                                 <?php while($s = $sedes->fetch(PDO::FETCH_ASSOC)): ?>
-                                    <option value="<?php echo $s['id_sede']; ?>" <?php if($s['id_sede']==$user['id_sede']) echo 'selected'; ?>><?php echo $s['nombre']; ?></option>
+                                    <option value="<?php echo $s['id_sede']; ?>" <?php if($s['id_sede'] == $user['id_sede']) echo 'selected'; ?>><?php echo htmlspecialchars($s['nombre']); ?></option>
                                 <?php endwhile; ?>
                             </select>
                         </div>
@@ -60,7 +55,7 @@ $sedes = $uModel->obtenerSedes();
                     
                     <div class="mb-4">
                         <label>Área</label>
-                        <input type="text" name="area" class="form-control" value="<?php echo $user['area']; ?>">
+                        <input type="text" name="area" class="form-control" value="<?php echo htmlspecialchars($user['area']); ?>">
                     </div>
                     
                     <button type="submit" class="btn btn-primary w-100 mb-2">Actualizar</button>

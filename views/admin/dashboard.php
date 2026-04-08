@@ -1,39 +1,7 @@
 <?php
-session_start();
-
-// 1. Seguridad: Verificar si el usuario está logueado
-if (!isset($_SESSION['id_usuario'])) {
-    header("Location: ../auth/login.php");
-    exit();
-}
-
-require_once '../../models/Activo.php';
-
-// Inicializar variables
-$totalActivos = 0;
-$resultado = null;
-$jsonEstados = "[]";
-$jsonSedes = "[]";
-$esColaborador = ($_SESSION['id_rol'] == 3); // Verificamos si es Rol 3
-
-// Intentar cargar datos dependiendo del ROL
-if (class_exists('Activo')) {
-    $activoModel = new Activo();
-    
-    if ($esColaborador) {
-        // Si es colaborador, solo ve SUS equipos
-        $resultado = $activoModel->leerPorUsuario($_SESSION['id_usuario']);
-        $totalActivos = $resultado->rowCount();
-    } else {
-        // Si es Admin (1) o Técnico (2), ve TODOS los equipos y gráficos
-        $resultado = $activoModel->leerTodo();
-        $totalActivos = $activoModel->contarTotal();
-        $jsonEstados = json_encode($activoModel->contarPorEstado());
-        $jsonSedes = json_encode($activoModel->contarPorSede());
-    }
-}
+// La vista delega absolutamente toda la lógica al Controlador
+require_once '../../controllers/CargarDashboardController.php';
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -42,16 +10,9 @@ if (class_exists('Activo')) {
     <title>Panel Principal - Kluane</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../public/css/style.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* Ajustes finos para celulares */
-        @media (max-width: 768px) {
-            .navbar-brand { font-size: 1.1rem; }
-            .user-badge { display: none; } /* Ocultar el texto de admin en pantallas muy chicas */
-            .action-buttons { flex-direction: column; width: 100%; gap: 10px; }
-            .action-buttons a { width: 100%; }
-        }
-    </style>
 </head>
 <body class="bg-light">
 
@@ -68,7 +29,7 @@ if (class_exists('Activo')) {
                     </ul>
                 <div class="d-flex flex-column flex-lg-row align-items-lg-center mt-3 mt-lg-0">
                     <span class="text-white me-3 mb-2 mb-lg-0">
-                        <i class="bi bi-person-circle"></i> <?php echo $_SESSION['nombre_completo']; ?>
+                        <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($_SESSION['nombre_completo']); ?>
                         <small class="badge bg-light text-primary ms-1 user-badge"><?php echo $esColaborador ? 'Colaborador' : 'Admin/Tec'; ?></small>
                     </span>
                     
@@ -165,18 +126,18 @@ if (class_exists('Activo')) {
                                 while ($fila = $resultado->fetch(PDO::FETCH_ASSOC)) { 
                             ?>
                                 <tr>
-                                    <td class="ps-3 fw-bold text-primary"><?php echo $fila['codigo_interno']; ?></td>
+                                    <td class="ps-3 fw-bold text-primary"><?php echo htmlspecialchars($fila['codigo_interno']); ?></td>
                                     <td>
-                                        <div class="fw-bold"><?php echo $fila['marca']; ?></div>
-                                        <small class="text-muted"><?php echo $fila['modelo']; ?></small>
+                                        <div class="fw-bold"><?php echo htmlspecialchars($fila['marca']); ?></div>
+                                        <small class="text-muted"><?php echo htmlspecialchars($fila['modelo']); ?></small>
                                     </td>
-                                    <td><small class="text-secondary"><?php echo $fila['serie']; ?></small></td>
-                                    <td><span class="badge bg-secondary"><?php echo $fila['categoria']; ?></span></td>
-                                    <td><?php echo $fila['sede']; ?></td>
+                                    <td><small class="text-secondary"><?php echo htmlspecialchars($fila['serie']); ?></small></td>
+                                    <td><span class="badge bg-secondary"><?php echo htmlspecialchars($fila['categoria']); ?></span></td>
+                                    <td><?php echo htmlspecialchars($fila['sede']); ?></td>
                                     <td>
                                         <?php if($fila['responsable']): ?>
                                             <span class="badge bg-info text-dark shadow-sm">
-                                                <i class="bi bi-person-fill"></i> <?php echo $fila['responsable']; ?>
+                                                <i class="bi bi-person-fill"></i> <?php echo htmlspecialchars($fila['responsable']); ?>
                                             </span>
                                         <?php else: ?>
                                             <span class="badge bg-light text-muted border">Sin Asignar</span>
@@ -188,7 +149,7 @@ if (class_exists('Activo')) {
                                             $estadoClass = 'bg-success';
                                             if($fila['estado'] == 'Mantenimiento') $estadoClass = 'bg-warning text-dark';
                                             elseif($fila['estado'] == 'Dañado' || $fila['estado'] == 'Baja') $estadoClass = 'bg-danger';
-                                            echo "<span class='badge $estadoClass shadow-sm'>" . $fila['estado'] . "</span>";
+                                            echo "<span class='badge $estadoClass shadow-sm'>" . htmlspecialchars($fila['estado']) . "</span>";
                                         ?>
                                     </td>
                         
@@ -219,6 +180,7 @@ if (class_exists('Activo')) {
                                                     </a>
                                                 <?php endif; ?>
                                             <?php endif; ?>
+                                            
                                             <a href="historial.php?id=<?php echo $fila['id_activo']; ?>" 
                                                class="btn btn-sm btn-outline-secondary" title="Ver Historial">
                                                <i class="bi bi-clock-history"></i>
@@ -248,7 +210,6 @@ if (class_exists('Activo')) {
 
     <?php if(!$esColaborador): ?>
     <script>
-        // Mismo código de gráficos sin cambios (omitido para brevedad visual, pero sigue funcionando)
         const datosEstados = <?php echo $jsonEstados; ?>;
         const datosSedes = <?php echo $jsonSedes; ?>;
 

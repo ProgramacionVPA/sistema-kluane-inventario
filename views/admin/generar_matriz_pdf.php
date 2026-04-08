@@ -1,43 +1,13 @@
 <?php
-session_start();
-if (!isset($_SESSION['id_usuario'])) {
-    header("Location: ../auth/login.php");
-    exit();
-}
+// 1. Llamamos al controlador que ya hizo los cálculos y validaciones
+require_once '../../controllers/CargarPdfMatrizController.php';
 
+// 2. Importamos FPDF
 require_once '../../libs/fpdf/fpdf.php';
-require_once '../../models/Matriz.php';
-
-if (!isset($_GET['sede'])) {
-    die("Error: Seleccione una sede.");
-}
-
-$id_sede = $_GET['sede'];
-$matrizModel = new Matriz();
-$datos = $matrizModel->obtenerDatosMatriz($id_sede); // Obtenemos los equipos
-$nombre_sede = "Proyecto Desconocido"; // Valor por defecto
-
-// Necesitamos recorrer los datos una vez para sacar estadísticas y el nombre de la sede
-$filas = [];
-$total_operativos = 0;
-$total_danados = 0;
-$conteo_laptops = 0;
-$conteo_radios = 0;
-
-while ($row = $datos->fetch(PDO::FETCH_ASSOC)) {
-    $filas[] = $row;
-    $nombre_sede = $row['ubicacion']; // Capturamos el nombre real
-    
-    // Contadores para el encabezado (KPIs)
-    if($row['estado'] == 'Operativo') $total_operativos++;
-    if($row['estado'] == 'Dañado') $total_danados++;
-    if(strpos(strtoupper($row['equipo']), 'LAPTOP') !== false) $conteo_laptops++;
-    if(strpos(strtoupper($row['equipo']), 'RADIO') !== false) $conteo_radios++;
-}
 
 class PDF extends FPDF {
     function Header() {
-        // No ponemos nada aquí para controlar manualmente la posición en el cuerpo
+        // Controlamos la cabecera manualmente en el cuerpo
     }
     
     function Footer() {
@@ -47,7 +17,7 @@ class PDF extends FPDF {
     }
 }
 
-$pdf = new PDF('L','mm','A4'); // Horizontal (Landscape) para que quepa la tabla
+$pdf = new PDF('L','mm','A4'); // Horizontal (Landscape)
 $pdf->AliasNbPages();
 $pdf->AddPage();
 
@@ -104,8 +74,9 @@ $pdf->SetFont('Arial','B',9);
 $w = array(10, 40, 45, 50, 40, 30, 30, 25);
 $header = array('N', 'Equipo', 'Serie', 'Responsable', utf8_decode('Área'), 'Fecha', utf8_decode('Ubicación'), 'Estado');
 
-for($i=0;$i<count($header);$i++)
+for($i=0;$i<count($header);$i++) {
     $pdf->Cell($w[$i],7,$header[$i],1,0,'C',true);
+}
 $pdf->Ln();
 
 // Restaurar colores para los datos
@@ -150,7 +121,7 @@ $pdf->Cell(90, 4, 'REVISADO POR (LOGISTICA)', 0, 0, 'C');
 $pdf->Cell(90, 4, 'RECIBIDO EN SITIO', 0, 1, 'C');
 
 $pdf->SetFont('Arial','',8);
-$pdf->Cell(90, 4, utf8_decode($_SESSION['nombre_completo']), 0, 0, 'C'); // Tu nombre
+$pdf->Cell(90, 4, utf8_decode($_SESSION['nombre_completo']), 0, 0, 'C'); 
 $pdf->Cell(90, 4, '(Firma)', 0, 0, 'C');
 $pdf->Cell(90, 4, '(Firma Jefe Campamento)', 0, 1, 'C');
 

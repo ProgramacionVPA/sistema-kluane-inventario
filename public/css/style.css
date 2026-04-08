@@ -1,0 +1,93 @@
+/* ==============================================================
+   ESTILOS GENERALES DEL SISTEMA KLUANE
+   ============================================================== */
+
+/* --- Estilos para la página de Login --- */
+.login-body {
+    background-color: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px; 
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 2.5rem 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    background: white;
+    border-top: 5px solid #0d6efd;
+}
+
+/* --- Botones y Elementos de Formulario (Usados en Login y Dashboards) --- */
+.btn-kluane {
+    background-color: #0d6efd; 
+    color: white;
+    font-weight: bold;
+    padding: 0.6rem;
+}
+
+.btn-kluane:hover {
+    background-color: #0b5ed7;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+}
+
+/* ==============================================================
+   ESTILOS DEL DASHBOARD Y NAVEGACIÓN
+   ============================================================== */
+
+/* --- Ajustes finos para celulares --- */
+@media (max-width: 768px) {
+    .navbar-brand { 
+        font-size: 1.1rem; 
+    }
+
+    /* Ocultar el texto de admin/rol en pantallas muy chicas para ahorrar espacio */
+    .user-badge { 
+        display: none !important; 
+    }
+    
+    /* Apilar botones de acción en celulares */
+    .action-buttons { 
+        flex-direction: column; 
+        width: 100%; 
+        gap: 10px; 
+    }
+    
+    .action-buttons a { 
+        width: 100%; 
+    }
+}
+
+    /* --- Ajustes para pantallas muy pequeñas (Ej: Matriz 09) --- */
+@media (max-width: 576px) {
+    .navbar-brand { 
+        font-size: 1.1rem !important; 
+    }
+}
+
+/* ==============================================================
+   ESTILOS DE TARJETAS Y FORMULARIOS
+   ============================================================== */
+
+.card-header-kluane {
+    background-color: #0dcaf0; /* Info color */
+    color: #fff;
+    border-bottom: 0;
+    border-radius: 10px 10px 0 0 !important;
+}
+
+/* --- Ajustes para el Historial --- */
+@media (max-width: 576px) {
+    .header-historial {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 15px;
+    }
+}

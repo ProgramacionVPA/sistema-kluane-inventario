@@ -216,6 +216,66 @@ class Activo {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    
+    // =========================================================================
+    // NUEVAS FUNCIONES DE REFACTORIZACIÓN MVC (Para limpiar las Vistas)
+    // =========================================================================
+
+    public function obtenerTodosUsuarios() {
+        $query = "SELECT * FROM usuarios ORDER BY nombre_completo ASC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function obtenerTodasSedes() {
+        $query = "SELECT * FROM sedes ORDER BY nombre ASC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Función para LEER solo los equipos asignados a un colaborador específico
+    public function leerPorUsuario($id_usuario) {
+        $query = "SELECT 
+                    a.id_activo,
+                    a.codigo_interno,
+                    a.marca,
+                    a.modelo,
+                    a.serie,
+                    a.estado,
+                    c.nombre as categoria,
+                    s.nombre as sede,
+                    u.nombre_completo as responsable,
+                    (SELECT COUNT(*) FROM historial_movimientos h WHERE h.id_activo = a.id_activo) as total_movimientos
+                  FROM " . $this->table_name . " a
+                  LEFT JOIN categorias c ON a.id_categoria = c.id_categoria
+                  LEFT JOIN sedes s ON a.id_sede_actual = s.id_sede
+                  LEFT JOIN usuarios u ON a.id_usuario_responsable = u.id_usuario
+                  WHERE a.id_usuario_responsable = :id_usuario
+                  ORDER BY a.id_activo DESC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id_usuario", $id_usuario);
+        $stmt->execute();
+        return $stmt;
+    }
+
+    // Función para obtener TODOS los detalles de un activo (con JOINs) para reportes/PDFs
+    public function obtenerDetallesPorId($id) {
+        $query = "SELECT a.*, 
+                  u.nombre_completo as responsable, u.email,
+                  s.nombre as sede, 
+                  c.nombre as categoria 
+                  FROM " . $this->table_name . " a
+                  LEFT JOIN usuarios u ON a.id_usuario_responsable = u.id_usuario
+                  LEFT JOIN sedes s ON a.id_sede_actual = s.id_sede
+                  LEFT JOIN categorias c ON a.id_categoria = c.id_categoria
+                  WHERE a.id_activo = ?";
+                  
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $id);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }
 ?>

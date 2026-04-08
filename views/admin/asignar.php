@@ -1,29 +1,7 @@
 <?php
-session_start();
-if (!isset($_SESSION['id_usuario'])) { header("Location: ../auth/login.php"); exit(); }
-if (!isset($_GET['id'])) { header("Location: dashboard.php"); exit(); }
-
-require_once '../../models/Activo.php';
-require_once '../../config/conexion.php'; 
-
-$activoModel = new Activo();
-$activo = $activoModel->obtenerPorId($_GET['id']);
-
-// Conexión para cargar listas desplegables
-$db = new Conexion();
-$conn = $db->getConexion();
-
-// 1. Cargar Empleados
-$stmt = $conn->prepare("SELECT * FROM usuarios ORDER BY nombre_completo ASC");
-$stmt->execute();
-$usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// 2. Cargar Sedes (Proyectos)
-$stmtSedes = $conn->prepare("SELECT * FROM sedes ORDER BY nombre ASC");
-$stmtSedes->execute();
-$sedes = $stmtSedes->fetchAll(PDO::FETCH_ASSOC);
+// La vista delega toda la lógica pesada al Controlador
+require_once '../../controllers/CargarAsignacionController.php';
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -32,17 +10,7 @@ $sedes = $stmtSedes->fetchAll(PDO::FETCH_ASSOC);
     <title>Asignar Activo - Kluane</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <style>
-        .card-header-kluane {
-            background-color: #0dcaf0; /* Info color */
-            color: #fff;
-            border-bottom: 0;
-            border-radius: 10px 10px 0 0 !important;
-        }
-        .input-group-text {
-            background-color: #f8f9fa;
-        }
-    </style>
+    <link rel="stylesheet" href="../../public/css/style.css">
 </head>
 <body class="bg-light">
     
@@ -65,13 +33,13 @@ $sedes = $stmtSedes->fetchAll(PDO::FETCH_ASSOC);
                         <div class="alert alert-light border shadow-sm mb-4 d-flex align-items-center">
                             <i class="bi bi-laptop fs-1 text-info me-3"></i>
                             <div>
-                                <h6 class="mb-0 fw-bold text-dark"><?php echo $activo['marca'] . " " . $activo['modelo']; ?></h6>
-                                <small class="text-muted">Serie / Etiqueta: <span class="badge bg-secondary"><?php echo $activo['serie']; ?></span></small>
+                                <h6 class="mb-0 fw-bold text-dark"><?php echo htmlspecialchars($activo['marca'] . " " . $activo['modelo']); ?></h6>
+                                <small class="text-muted">Serie / Etiqueta: <span class="badge bg-secondary"><?php echo htmlspecialchars($activo['serie']); ?></span></small>
                             </div>
                         </div>
 
                         <form action="../../controllers/ActivoController.php?accion=asignar" method="POST">
-                            <input type="hidden" name="id_activo" value="<?php echo $activo['id_activo']; ?>">
+                            <input type="hidden" name="id_activo" value="<?php echo htmlspecialchars($activo['id_activo']); ?>">
 
                             <div class="mb-4">
                                 <label class="form-label text-muted fw-semibold small">NUEVO CUSTODIO (EMPLEADO)</label>
@@ -80,8 +48,8 @@ $sedes = $stmtSedes->fetchAll(PDO::FETCH_ASSOC);
                                     <select name="id_usuario" class="form-select" required>
                                         <option value="">-- Seleccione Empleado --</option>
                                         <?php foreach($usuarios as $user): ?>
-                                            <option value="<?php echo $user['id_usuario']; ?>">
-                                                <?php echo $user['nombre_completo']; ?>
+                                            <option value="<?php echo htmlspecialchars($user['id_usuario']); ?>">
+                                                <?php echo htmlspecialchars($user['nombre_completo']); ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -95,12 +63,9 @@ $sedes = $stmtSedes->fetchAll(PDO::FETCH_ASSOC);
                                     <select name="id_sede" class="form-select" required>
                                         <option value="">-- Seleccione Proyecto --</option>
                                         <?php foreach($sedes as $sede): ?>
-                                            <option value="<?php echo $sede['id_sede']; ?>" 
-                                                <?php 
-                                                // Pre-seleccionar la sede actual si existe
-                                                if($activo['id_sede_actual'] == $sede['id_sede']) echo 'selected'; 
-                                                ?>>
-                                                <?php echo $sede['nombre']; ?>
+                                            <option value="<?php echo htmlspecialchars($sede['id_sede']); ?>" 
+                                                <?php if($activo['id_sede_actual'] == $sede['id_sede']) echo 'selected'; ?>>
+                                                <?php echo htmlspecialchars($sede['nombre']); ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>

@@ -1,9 +1,6 @@
 <?php
-session_start();
-if (!isset($_SESSION['id_usuario'])) {
-    header("Location: ../auth/login.php");
-    exit();
-}
+// Delegamos la carga inicial al controlador
+require_once '../../controllers/CargarNuevoActivoController.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -69,9 +66,12 @@ if (!isset($_SESSION['id_usuario'])) {
                             <div class="mb-3">
                                 <label class="form-label">Sede / Ubicación</label>
                                 <select name="sede" class="form-select" required>
-                                    <option value="1">Matriz Quito</option>
-                                    <option value="2">Proyecto Macas</option>
-                                    <option value="3">Proyecto Warintza</option>
+                                    <option value="">Seleccione un proyecto...</option>
+                                    <?php foreach ($sedes as $sede): ?>
+                                        <option value="<?php echo $sede['id_sede']; ?>">
+                                            <?php echo htmlspecialchars($sede['nombre']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
 
