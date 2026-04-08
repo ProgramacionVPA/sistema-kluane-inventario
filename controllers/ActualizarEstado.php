@@ -1,59 +1,48 @@
 <?php
 session_start();
-require_once '../config/conexion.php';
 
+// 1. Seguridad
 if (!isset($_SESSION['id_usuario'])) {
     header("Location: ../views/auth/login.php");
     exit();
 }
 
+// 2. Requerir el modelo
+require_once __DIR__ . '/../models/Activo.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
+    // Recibir los datos del formulario
     $id_activo = $_POST['id_activo'];
     $nuevo_estado = $_POST['nuevo_estado'];
     $id_nuevo_responsable = $_POST['id_responsable']; 
     $necesita_insumos = $_POST['necesita_insumos']; 
     $observacion = $_POST['observacion'];
 
-    $database = new Conexion();
-    $conn = $database->getConexion();
+    // Preparamos el texto del historial
+    $texto_obs = "Cambio realizado en sitio. " . trim($observacion);
+    
+    // Evitamos errores si la sede no está en sesión (para admins)
+    $id_sede_actual = isset($_SESSION['id_sede']) ? $_SESSION['id_sede'] : null;
 
-try {
-        // 1. Actualiza el Activo 
-        $sql = "UPDATE activos SET 
-                estado = :estado, 
-                id_usuario_responsable = :resp, 
-                necesita_insumos = :insumos 
-                WHERE id_activo = :id";
-        
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':estado', $nuevo_estado);
-        $stmt->bindParam(':resp', $id_nuevo_responsable);
-        $stmt->bindParam(':insumos', $necesita_insumos);
-        $stmt->bindParam(':id', $id_activo);
-        
-        if($stmt->execute()) {
-            
-            
-            $sqlH = "INSERT INTO historial_movimientos (id_activo, id_usuario_responsable, tipo_movimiento, fecha_movimiento, ubicacion_destino, observacion) 
-                     VALUES (:id_activo, :id_usuario, 'Edicion en Campo', NOW(), :sede, :obs)";
-            
-            $stmtH = $conn->prepare($sqlH);
-            $stmtH->bindParam(':id_activo', $id_activo);
-            $stmtH->bindParam(':id_usuario', $_SESSION['id_usuario']); 
-            $stmtH->bindParam(':sede', $_SESSION['id_sede']);
-            $texto_obs = "Cambio realizado en sitio. " . $observacion;
-            $stmtH->bindParam(':obs', $texto_obs);
-            $stmtH->execute();
+    // 3. Ejecutar la acción mediante el modelo
+    $activoModel = new Activo();
+    $resultado = $activoModel->actualizarEstadoEnCampo(
+        $id_activo, 
+        $nuevo_estado, 
+        $id_nuevo_responsable, 
+        $necesita_insumos, 
+        $_SESSION['id_usuario'], 
+        $id_sede_actual, 
+        $texto_obs
+    );
 
-            
-            header("Location: ../views/admin/ver_matriz.php?sede=" . $_SESSION['id_sede'] . "&msg=ok");
-        } else {
-            echo "Error al actualizar.";
-        }
-
-    } catch(PDOException $e) {
-        echo "Error: " . $e->getMessage();
+    // 4. Redirección
+    if ($resultado) {
+        // Redirigimos de vuelta a la matriz
+        header("Location: ../views/admin/ver_matriz.php?sede=" . $id_sede_actual . "&msg=ok");
+    } else {
+        echo "<script>alert('Error al actualizar la base de datos.'); window.history.back();</script>";
     }
 }
 ?>

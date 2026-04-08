@@ -277,5 +277,94 @@ class Activo {
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    // Función para actualizar el estado desde la Matriz y registrar el historial
+    public function actualizarEstadoEnCampo($id_activo, $nuevo_estado, $id_responsable, $necesita_insumos, $id_usuario_accion, $id_sede, $observacion) {
+        try {
+            // Iniciamos una transacción (o se hace todo, o no se hace nada)
+            $this->conn->beginTransaction();
+
+            // 1. Actualizar el Activo
+            // Manejamos si el ID responsable viene vacío (NULL)
+            $resp_val = empty($id_responsable) ? null : $id_responsable;
+
+            $queryActivo = "UPDATE " . $this->table_name . " SET 
+                            estado = :estado, 
+                            id_usuario_responsable = :resp, 
+                            necesita_insumos = :insumos 
+                            WHERE id_activo = :id";
+            
+            $stmtActivo = $this->conn->prepare($queryActivo);
+            $stmtActivo->bindParam(':estado', $nuevo_estado);
+            $stmtActivo->bindParam(':resp', $resp_val);
+            $stmtActivo->bindParam(':insumos', $necesita_insumos);
+            $stmtActivo->bindParam(':id', $id_activo);
+            $stmtActivo->execute();
+
+            // 2. Registrar en el Historial
+            $queryHistorial = "INSERT INTO historial_movimientos 
+                               (id_activo, id_usuario_responsable, tipo_movimiento, fecha_movimiento, ubicacion_destino, observacion) 
+                               VALUES (:id_activo, :id_usuario, 'Actualización', NOW(), :sede, :obs)";
+            
+            $stmtHistorial = $this->conn->prepare($queryHistorial);
+            $stmtHistorial->bindParam(':id_activo', $id_activo);
+            $stmtHistorial->bindParam(':id_usuario', $id_usuario_accion); 
+            $stmtHistorial->bindParam(':sede', $id_sede);
+            $stmtHistorial->bindParam(':obs', $observacion);
+            $stmtHistorial->execute();
+
+            // Confirmamos los cambios
+            $this->conn->commit();
+            return true;
+
+        } catch(PDOException $e) {
+            // Si algo falla, deshacemos todo para evitar errores a medias
+            $this->conn->rollBack();
+            return false;
+        }
+    }
+
+    // Función para transferir un activo a otra sede y registrarlo en historial
+    public function transferirActivo($id_activo, $id_sede_destino, $id_usuario_accion, $nombre_usuario_accion, $motivo) {
+        try {
+            // Iniciamos la transacción de seguridad
+            $this->conn->beginTransaction();
+
+            // 1. MOVER EL ACTIVO (Quitar responsable y cambiar sede)
+            $queryActivo = "UPDATE " . $this->table_name . " SET 
+                            id_sede_actual = :sede_dest, 
+                            id_usuario_responsable = NULL, 
+                            necesita_insumos = 'NO' 
+                            WHERE id_activo = :id";
+            
+            $stmtActivo = $this->conn->prepare($queryActivo);
+            $stmtActivo->bindParam(':sede_dest', $id_sede_destino);
+            $stmtActivo->bindParam(':id', $id_activo);
+            $stmtActivo->execute();
+
+            // 2. REGISTRAR EN HISTORIAL
+            $queryHistorial = "INSERT INTO historial_movimientos 
+                               (id_activo, id_usuario_responsable, tipo_movimiento, fecha_movimiento, ubicacion_destino, observacion) 
+                               VALUES (:id_activo, :usuario, 'Transferencia / Devolucion', NOW(), :sede_nombre, :obs)";
+            
+            $stmtHistorial = $this->conn->prepare($queryHistorial);
+            $stmtHistorial->bindParam(':id_activo', $id_activo);
+            $stmtHistorial->bindParam(':usuario', $id_usuario_accion); 
+            $stmtHistorial->bindParam(':sede_nombre', $id_sede_destino);
+            
+            $texto_obs = "Transferencia enviada por " . $nombre_usuario_accion . ". Motivo: " . trim($motivo);
+            $stmtHistorial->bindParam(':obs', $texto_obs);
+            $stmtHistorial->execute();
+
+            // Si todo salió bien, confirmamos los cambios
+            $this->conn->commit();
+            return true;
+
+        } catch(PDOException $e) {
+            // Si algo falla, revertimos todo
+            $this->conn->rollBack();
+            return false;
+        }
+    }
 }
 ?>

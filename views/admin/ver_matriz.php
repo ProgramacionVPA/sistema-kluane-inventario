@@ -1,5 +1,4 @@
 <?php
-// Delegamos el trabajo al controlador
 require_once '../../controllers/CargarMatrizController.php';
 ?>
 <!DOCTYPE html>
@@ -47,23 +46,19 @@ require_once '../../controllers/CargarMatrizController.php';
 
         <?php if($_SESSION['id_rol'] == 1): ?>
             <div class="card mb-4 shadow-sm border-0">
-                <div class="card-body bg-white rounded">
-                    <form action="" method="GET" class="row align-items-end">
-                        <div class="col-12 col-md-5 mb-2 mb-md-0">
-                            <label class="form-label fw-bold">Seleccione Proyecto:</label>
-                            <select name="sede" class="form-select">
-                                <option value="">-- Seleccione --</option>
-                                <?php foreach($lista_sedes as $s): ?>
-                                    <option value="<?php echo $s['id_sede']; ?>" <?php if($id_sede_seleccionada == $s['id_sede']) echo 'selected'; ?>>
-                                        <?php echo htmlspecialchars($s['nombre']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-12 col-md-2">
-                            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Ver</button>
-                        </div>
-                    </form>
+                <div class="card-body bg-white rounded d-flex align-items-center">
+                    <label class="form-label fw-bold me-3 mb-0">Seleccione Proyecto:</label>
+                    <select name="sede" id="select_sede" class="form-select w-auto" onchange="filtrarMatrizAjax()">
+                        <option value="">-- Seleccione para cargar --</option>
+                        <?php foreach($lista_sedes as $s): ?>
+                            <option value="<?php echo $s['id_sede']; ?>" <?php if($id_sede_seleccionada == $s['id_sede']) echo 'selected'; ?>>
+                                <?php echo htmlspecialchars($s['nombre']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <a href="#" id="btn_pdf" target="_blank" class="btn btn-outline-danger ms-auto d-none fw-bold">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> PDF OFICIAL
+                    </a>
                 </div>
             </div>
         <?php else: ?>
@@ -72,13 +67,9 @@ require_once '../../controllers/CargarMatrizController.php';
             </div>
         <?php endif; ?>
 
-        <?php if ($id_sede_seleccionada): ?>
         <div class="card shadow">
-            <div class="card-header bg-success text-white d-flex flex-wrap justify-content-between align-items-center py-2">
+            <div class="card-header bg-success text-white py-2">
                 <h6 class="mb-0 fw-bold mt-1">INVENTARIO EN SITIO</h6>
-                <a href="generar_matriz_pdf.php?sede=<?php echo $id_sede_seleccionada; ?>" target="_blank" class="btn btn-light btn-sm fw-bold text-success mt-1">
-                    <i class="bi bi-file-earmark-pdf-fill"></i> PDF OFICIAL
-                </a>
             </div>
             
             <div class="card-body p-0">
@@ -94,72 +85,18 @@ require_once '../../controllers/CargarMatrizController.php';
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <?php 
-                            $contador = 1;
-                            if(count($filas_matriz) > 0):
-                                foreach($filas_matriz as $fila): 
-                            ?>
+                        <tbody id="tbody_matriz">
                             <tr>
-                                <td><?php echo $contador++; ?></td>
-                                <td class="text-start">
-                                    <span class="fw-bold"><?php echo htmlspecialchars($fila['equipo']); ?></span><br>
-                                    <small class="text-muted"><?php echo htmlspecialchars($fila['serie']); ?></small>
-                                </td>
-                                <td class="text-start">
-                                    <i class="bi bi-person-fill"></i> <?php echo $fila['responsable'] ? htmlspecialchars($fila['responsable']) : '<span class="text-danger">Sin Asignar</span>'; ?><br>
-                                    <span class="badge bg-secondary"><?php echo htmlspecialchars($fila['area']); ?></span>
-                                </td>
-                                <td>
-                                    <?php if($fila['estado'] == 'Operativo'): ?>
-                                        <span class="badge bg-success">OPERATIVO</span>
-                                    <?php else: ?>
-                                        <span class="badge bg-danger"><?php echo htmlspecialchars($fila['estado']); ?></span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php if($fila['necesita_insumos'] == 'SI'): ?>
-                                        <span class="badge bg-warning text-dark">SI</span>
-                                    <?php else: ?>
-                                        <span class="text-muted">No</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php if($_SESSION['id_rol'] != 3): ?>
-                                        <button class="btn btn-sm btn-primary" 
-                                                title="Editar Estado/Responsable"
-                                                onclick="abrirModal(
-                                                    '<?php echo $fila['id_activo']; ?>', 
-                                                    '<?php echo $fila['id_responsable']; ?>', 
-                                                    '<?php echo $fila['estado']; ?>',
-                                                    '<?php echo $fila['necesita_insumos']; ?>'
-                                                )">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button>
-
-                                        <button class="btn btn-sm btn-warning" 
-                                                title="Devolver / Transferir a otra Sede"
-                                                onclick="abrirModalTransferir('<?php echo $fila['id_activo']; ?>', '<?php echo htmlspecialchars($fila['equipo'], ENT_QUOTES); ?>')">
-                                            <i class="bi bi-truck"></i>
-                                        </button>
-                                    <?php else: ?>
-                                        <span class="badge bg-light text-muted border py-2 px-3" title="No tienes permisos para modificar">
-                                            <i class="bi bi-lock-fill"></i> Solo Lectura
-                                        </span>
-                                    <?php endif; ?>
+                                <td colspan="6" class="p-5 text-muted text-center">
+                                    <i class="bi bi-arrow-up-circle fs-1"></i><br>
+                                    Seleccione un proyecto arriba para ver el inventario.
                                 </td>
                             </tr>
-                            <?php 
-                                endforeach; 
-                            else: ?>
-                                <tr><td colspan="6" class="p-4 text-muted">No hay activos registrados en este proyecto.</td></tr>
-                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-        <?php endif; ?>
     </div>
 
     <?php if($_SESSION['id_rol'] != 3): ?>
@@ -266,24 +203,123 @@ require_once '../../controllers/CargarMatrizController.php';
     <?php endif; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
     <script>
+        // Funciones de Modales usando sintaxis jQuery
         function abrirModal(id, idResp, estado, insumos) {
-            document.getElementById('modal_id_activo').value = id;
-            document.getElementById('modal_responsable').value = idResp; 
-            document.getElementById('modal_estado').value = estado;
-            document.getElementById('modal_insumos').value = insumos || 'NO';
+            $('#modal_id_activo').val(id);
+            $('#modal_responsable').val(idResp); 
+            $('#modal_estado').val(estado);
+            $('#modal_insumos').val(insumos || 'NO');
             
             var myModal = new bootstrap.Modal(document.getElementById('modalEditar'));
             myModal.show();
         }
 
         function abrirModalTransferir(id, nombre) {
-            document.getElementById('trans_id_activo').value = id;
-            document.getElementById('trans_nombre_equipo').innerText = nombre;
+            $('#trans_id_activo').val(id);
+            $('#trans_nombre_equipo').text(nombre);
             
             var myModal = new bootstrap.Modal(document.getElementById('modalTransferir'));
             myModal.show();
         }
+
+        // Petición AJAX
+        function filtrarMatrizAjax(idSedeForzada = null) {
+            
+            // Si no viene forzada (ej. Administrador), lee el select
+            let sedeId = idSedeForzada;
+            if (!sedeId) {
+                sedeId = $('#select_sede').val();
+            }
+
+            const tbody = $('#tbody_matriz');
+            const btnPdf = $('#btn_pdf');
+
+            // Limpiar si no hay sede
+            if (!sedeId) {
+                tbody.html('<tr><td colspan="6" class="p-5 text-muted text-center"><i class="bi bi-arrow-up-circle fs-1"></i><br>Seleccione un proyecto arriba para ver el inventario.</td></tr>');
+                if (btnPdf.length) btnPdf.addClass('d-none');
+                return;
+            }
+
+            // Spinner de "Cargando..."
+            tbody.html('<tr><td colspan="6" class="p-5 text-center text-primary"><div class="spinner-border mb-2" role="status"></div><br>Cargando matriz en tiempo real...</td></tr>');
+            
+            if (btnPdf.length) {
+                btnPdf.attr('href', 'generar_matriz_pdf.php?sede=' + sedeId);
+                btnPdf.removeClass('d-none');
+            }
+
+            // Llamada AJAX nativa de jQuery
+            $.ajax({
+                url: '../../controllers/ApiMatrizController.php',
+                type: 'GET',
+                data: { sede: sedeId },
+                dataType: 'json',
+                success: function(datos) {
+                    tbody.empty(); 
+
+                    if (datos.length === 0) {
+                        tbody.html('<tr><td colspan="6" class="p-4 text-muted text-center">No hay activos registrados en este proyecto.</td></tr>');
+                        return;
+                    }
+
+                    let html = '';
+                    let contador = 1;
+                    const idRol = <?php echo $_SESSION['id_rol']; ?>;
+
+                    datos.forEach(fila => {
+                        let badgeEstado = fila.estado === 'Operativo' ? '<span class="badge bg-success">OPERATIVO</span>' : `<span class="badge bg-danger">${fila.estado}</span>`;
+                        let badgeInsumos = fila.necesita_insumos === 'SI' ? '<span class="badge bg-warning text-dark">SI</span>' : '<span class="text-muted">No</span>';
+                        let responsable = fila.responsable ? fila.responsable : '<span class="text-danger">Sin Asignar</span>';
+                        
+                        let botones = '';
+                        if (idRol !== 3) {
+                            let nombreEquipoSeguro = fila.equipo.replace(/'/g, "\\'");
+                            botones = `
+                                <button class="btn btn-sm btn-primary" title="Editar" onclick="abrirModal('${fila.id_activo}', '${fila.id_responsable || ''}', '${fila.estado}', '${fila.necesita_insumos}')"><i class="bi bi-pencil-square"></i></button>
+                                <button class="btn btn-sm btn-warning" title="Transferir" onclick="abrirModalTransferir('${fila.id_activo}', '${nombreEquipoSeguro}')"><i class="bi bi-truck"></i></button>
+                            `;
+                        } else {
+                            botones = `<span class="badge bg-light text-muted border py-2 px-3"><i class="bi bi-lock-fill"></i> Solo Lectura</span>`;
+                        }
+
+                        html += `
+                            <tr>
+                                <td>${contador++}</td>
+                                <td class="text-start">
+                                    <span class="fw-bold">${fila.equipo}</span><br>
+                                    <small class="text-muted">${fila.serie}</small>
+                                </td>
+                                <td class="text-start">
+                                    <i class="bi bi-person-fill"></i> ${responsable}<br>
+                                    <span class="badge bg-secondary">${fila.area || ''}</span>
+                                </td>
+                                <td>${badgeEstado}</td>
+                                <td>${badgeInsumos}</td>
+                                <td>${botones}</td>
+                            </tr>
+                        `;
+                    });
+
+                    tbody.html(html);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error AJAX:', error);
+                    tbody.html('<tr><td colspan="6" class="p-4 text-danger text-center">Ocurrió un error al cargar los datos.</td></tr>');
+                }
+            });
+        }
+
+        // Auto-cargar si ya hay una sede seleccionada (Ej. Logísticos)
+        $(document).ready(function() {
+            <?php if($id_sede_seleccionada): ?>
+                filtrarMatrizAjax('<?php echo $id_sede_seleccionada; ?>');
+            <?php endif; ?>
+        });
     </script>
 </body>
 </html>
