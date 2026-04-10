@@ -32,13 +32,14 @@ require_once '../../controllers/CargarDashboardController.php';
                         <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($_SESSION['nombre_completo']); ?>
                         <small class="badge bg-light text-primary ms-1 user-badge"><?php echo $esColaborador ? 'Colaborador' : 'Admin/Tec'; ?></small>
                     </span>
-                    
                     <?php if($_SESSION['id_rol'] == 1): ?>
-                        <a href="usuarios.php" class="btn btn-outline-light btn-sm me-0 me-lg-2 mb-2 mb-lg-0">
+                        <a href="sedes.php" class="btn btn-outline-light btn-sm me-0 me-lg-2 mb-2 mb-lg-0" title="Gestionar Sedes/Proyectos">
+                            <i class="bi bi-building"></i> Proyectos
+                        </a>
+                        <a href="usuarios.php" class="btn btn-outline-light btn-sm me-0 me-lg-2 mb-2 mb-lg-0" title="Gestionar Usuarios">
                             <i class="bi bi-people-fill"></i> Usuarios
                         </a>
                     <?php endif; ?>
-                    
                     <a href="../../controllers/Logout.php" class="btn btn-danger btn-sm">
                         <i class="bi bi-box-arrow-right"></i> Salir
                     </a>

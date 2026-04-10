@@ -28,9 +28,15 @@ if ($_SESSION['id_rol'] == 2) {
     $id_sede_seleccionada = $_GET['sede'];
 }
 
-// 6. Obtener los activos de la matriz seleccionada (También en un Array)
+// 6. Obtener los activos dependiendo del ROL
 $filas_matriz = [];
-if ($id_sede_seleccionada) {
+
+if ($_SESSION['id_rol'] == 3) {
+    // Si es Colaborador, SOLO ve sus propios equipos
+    $stmt_matriz = $matrizModel->obtenerDatosPorColaborador($_SESSION['id_usuario']);
+    $filas_matriz = $stmt_matriz->fetchAll(PDO::FETCH_ASSOC);
+} elseif ($id_sede_seleccionada) {
+    // Si es Admin o Logístico, ve todos los equipos de la Sede seleccionada
     $stmt_matriz = $matrizModel->obtenerDatosMatriz($id_sede_seleccionada);
     $filas_matriz = $stmt_matriz->fetchAll(PDO::FETCH_ASSOC);
 }

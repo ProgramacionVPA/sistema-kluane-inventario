@@ -11,25 +11,36 @@ if (!isset($_SESSION['id_usuario'])) {
 require_once __DIR__ . '/../models/Matriz.php';
 $matrizModel = new Matriz();
 
-// 3. Identificar la sede pedida por AJAX
-$id_sede = isset($_GET['sede']) ? $_GET['sede'] : '';
+$datos = []; // Iniciamos un arreglo vacío por defecto
 
-// Si es logístico (Rol 2), forzamos su propia sede por seguridad
-if ($_SESSION['id_rol'] == 2) {
-    $id_sede = $_SESSION['id_sede'];
+// 3. Lógica de seguridad separada por ROLES
+if ($_SESSION['id_rol'] == 3) {
+    
+    // CASO A: Es Colaborador. 
+    // Ignoramos la sede y traemos ÚNICAMENTE los equipos asignados a su ID.
+    $id_usuario = $_SESSION['id_usuario'];
+    $stmt = $matrizModel->obtenerDatosPorColaborador($id_usuario);
+    $datos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+} else {
+    
+    // CASO B: Es Administrador o Logístico. 
+    // Ellos sí necesitan buscar por Sede.
+    $id_sede = isset($_GET['sede']) ? $_GET['sede'] : '';
+
+    // Si es logístico (Rol 2), forzamos su propia sede por seguridad
+    if ($_SESSION['id_rol'] == 2) {
+        $id_sede = $_SESSION['id_sede'];
+    }
+
+    // Si tenemos una sede válida, traemos toda la matriz de ese campamento
+    if (!empty($id_sede)) {
+        $stmt = $matrizModel->obtenerDatosMatriz($id_sede);
+        $datos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 
-// Si no hay sede seleccionada, devolvemos un arreglo vacío
-if (empty($id_sede)) {
-    echo json_encode([]);
-    exit();
-}
-
-// 4. Buscar datos
-$stmt = $matrizModel->obtenerDatosMatriz($id_sede);
-$datos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// 5. Devolver la magia en formato JSON
+// 4. Devolver la magia en formato JSON
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode($datos);
 ?>
