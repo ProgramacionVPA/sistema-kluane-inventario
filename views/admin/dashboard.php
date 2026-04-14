@@ -11,7 +11,7 @@ require_once '../../controllers/CargarDashboardController.php';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="../../public/css/style.css">
-    
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-light">
@@ -26,7 +26,7 @@ require_once '../../controllers/CargarDashboardController.php';
             
             <div class="collapse navbar-collapse" id="navbarText">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    </ul>
+                </ul>
                 <div class="d-flex flex-column flex-lg-row align-items-lg-center mt-3 mt-lg-0">
                     <span class="text-white me-3 mb-2 mb-lg-0">
                         <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($_SESSION['nombre_completo']); ?>
@@ -106,6 +106,15 @@ require_once '../../controllers/CargarDashboardController.php';
         <?php endif; ?>
 
         <div class="card shadow-sm border-0 mb-5">
+            
+            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-list-ul"></i> Listado General de Activos</h6>
+                <div class="input-group input-group-sm w-25 min-w-200px">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" id="buscador_dashboard" class="form-control" placeholder="Buscar por código, serie o responsable...">
+                </div>
+            </div>
+
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0" style="min-width: 900px;">
@@ -121,12 +130,12 @@ require_once '../../controllers/CargarDashboardController.php';
                                 <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tbody_dashboard">
                             <?php 
                             if ($resultado && $resultado->rowCount() > 0) {
                                 while ($fila = $resultado->fetch(PDO::FETCH_ASSOC)) { 
                             ?>
-                                <tr>
+                                <tr class="fila-dash">
                                     <td class="ps-3 fw-bold text-primary"><?php echo htmlspecialchars($fila['codigo_interno']); ?></td>
                                     <td>
                                         <div class="fw-bold"><?php echo htmlspecialchars($fila['marca']); ?></div>
@@ -144,7 +153,6 @@ require_once '../../controllers/CargarDashboardController.php';
                                             <span class="badge bg-light text-muted border">Sin Asignar</span>
                                         <?php endif; ?>
                                     </td>
-
                                     <td>
                                         <?php 
                                             $estadoClass = 'bg-success';
@@ -174,8 +182,7 @@ require_once '../../controllers/CargarDashboardController.php';
                                                     </button>
                                                 <?php else: ?>
                                                     <a href="../../controllers/ActivoController.php?accion=eliminar&id=<?php echo $fila['id_activo']; ?>" 
-                                                       class="btn btn-sm btn-outline-danger" 
-                                                       onclick="return confirm('¿Estás seguro de eliminar este activo? Solo si fue un error de tipeo.');"
+                                                       class="btn btn-sm btn-outline-danger btn-eliminar-activo" 
                                                        title="Eliminar Activo">
                                                        <i class="bi bi-trash"></i>
                                                     </a>
@@ -209,61 +216,18 @@ require_once '../../controllers/CargarDashboardController.php';
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+
     <?php if(!$esColaborador): ?>
     <script>
-        const datosEstados = <?php echo $jsonEstados; ?>;
-        const datosSedes = <?php echo $jsonSedes; ?>;
-
-        if(datosEstados.length > 0) {
-            const labelsEstados = datosEstados.map(d => d.estado);
-            const dataEstados = datosEstados.map(d => d.cantidad);
-            const coloresEstados = labelsEstados.map(estado => {
-                if(estado === 'Operativo') return '#198754';
-                if(estado === 'Dañado' || estado === 'Baja') return '#dc3545';
-                if(estado === 'Mantenimiento') return '#ffc107';
-                return '#6c757d';
-            });
-
-            new Chart(document.getElementById('graficoEstados'), {
-                type: 'doughnut',
-                data: {
-                    labels: labelsEstados,
-                    datasets: [{
-                        data: dataEstados,
-                        backgroundColor: coloresEstados,
-                        borderWidth: 1
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-        }
-
-        if(datosSedes.length > 0) {
-            const labelsSedes = datosSedes.map(d => d.sede);
-            const dataSedes = datosSedes.map(d => d.cantidad);
-
-            new Chart(document.getElementById('graficoSedes'), {
-                type: 'bar',
-                data: {
-                    labels: labelsSedes,
-                    datasets: [{
-                        label: 'Equipos Registrados',
-                        data: dataSedes,
-                        backgroundColor: '#0d6efd',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
+        const DATOS_ESTADOS = <?php echo isset($jsonEstados) ? $jsonEstados : '[]'; ?>;
+        const DATOS_SEDES = <?php echo isset($jsonSedes) ? $jsonSedes : '[]'; ?>;
     </script>
     <?php endif; ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../public/js/dashboard.js"></script>
+    <script src="../../public/js/kluane_app.js"></script>
 </body>
 </html>

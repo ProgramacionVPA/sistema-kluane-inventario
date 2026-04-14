@@ -11,6 +11,7 @@ require_once '../../controllers/CargarAsignacionController.php';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="../../public/css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
     
@@ -38,14 +39,14 @@ require_once '../../controllers/CargarAsignacionController.php';
                             </div>
                         </div>
 
-                        <form action="../../controllers/ActivoController.php?accion=asignar" method="POST">
+                        <form id="formAsignar" action="../../controllers/ActivoController.php?accion=asignar" method="POST" novalidate>
                             <input type="hidden" name="id_activo" value="<?php echo htmlspecialchars($activo['id_activo']); ?>">
 
                             <div class="mb-4">
                                 <label class="form-label text-muted fw-semibold small">NUEVO CUSTODIO (EMPLEADO)</label>
                                 <div class="input-group shadow-sm">
                                     <span class="input-group-text"><i class="bi bi-person-check"></i></span>
-                                    <select name="id_usuario" class="form-select" required>
+                                    <select name="id_usuario" id="id_usuario" class="form-select" required>
                                         <option value="">-- Seleccione Empleado --</option>
                                         <?php foreach($usuarios as $user): ?>
                                             <option value="<?php echo htmlspecialchars($user['id_usuario']); ?>">
@@ -60,7 +61,7 @@ require_once '../../controllers/CargarAsignacionController.php';
                                 <label class="form-label text-muted fw-semibold small">UBICACIÓN / PROYECTO DE DESTINO</label>
                                 <div class="input-group shadow-sm">
                                     <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
-                                    <select name="id_sede" class="form-select" required>
+                                    <select name="id_sede" id="id_sede" class="form-select" required>
                                         <option value="">-- Seleccione Proyecto --</option>
                                         <?php foreach($sedes as $sede): ?>
                                             <option value="<?php echo htmlspecialchars($sede['id_sede']); ?>" 
@@ -82,7 +83,7 @@ require_once '../../controllers/CargarAsignacionController.php';
                             </div>
 
                             <div class="d-grid gap-2 mt-4">
-                                <button type="submit" class="btn btn-info text-white fw-bold shadow-sm py-2">
+                                <button type="submit" id="btnSubmit" class="btn btn-info text-white fw-bold shadow-sm py-2">
                                     <i class="bi bi-check2-circle"></i> Confirmar Asignación
                                 </button>
                                 <a href="dashboard.php" class="btn btn-light border text-muted py-2">Cancelar</a>
@@ -96,5 +97,11 @@ require_once '../../controllers/CargarAsignacionController.php';
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    
+    <script src="../../public/js/kluane_app.js"></script>
+</body>
+</html>
 </body>
 </html>

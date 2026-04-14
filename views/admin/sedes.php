@@ -7,6 +7,7 @@
     <title>Gestión de Proyectos - Kluane</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
     
@@ -22,26 +23,19 @@
     <div class="container col-md-10 col-lg-8">
         
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="text-primary fw-bold mb-0">Sedes y Proyectos</h3>
+            <h3 class="text-primary fw-bold mb-0"><i class="bi bi-buildings"></i> Sedes y Proyectos</h3>
             <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevaSede">
                 <i class="bi bi-plus-circle"></i> Nuevo Proyecto
             </button>
         </div>
-        
-        <?php if(isset($_GET['msg'])): ?>
-            <div class="alert alert-success alert-dismissible fade show shadow-sm">
-                <i class="bi bi-check-circle-fill"></i> Acción realizada con éxito.
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <?php endif; ?>
 
-        <div class="card shadow border-0">
+        <div class="card shadow border-0 rounded-3">
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 text-center">
                         <thead class="table-light">
                             <tr>
-                                <th>ID</th>
+                                <th class="py-3">ID</th>
                                 <th class="text-start">Nombre del Proyecto / Sede</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
@@ -51,16 +45,17 @@
                             <?php while($row = $lista_sedes->fetch(PDO::FETCH_ASSOC)): ?>
                             <tr class="<?php echo ($row['estado'] == 'Inactivo') ? 'table-secondary opacity-75' : ''; ?>">
                                 <td class="text-muted">#<?php echo $row['id_sede']; ?></td>
-                                <td class="text-start fw-bold"><?php echo htmlspecialchars($row['nombre']); ?></td>
+                                <td class="text-start fw-bold text-dark"><?php echo htmlspecialchars($row['nombre']); ?></td>
                                 <td>
                                     <?php if($row['estado'] == 'Activo'): ?>
-                                        <span class="badge bg-success rounded-pill px-3">Activo</span>
+                                        <span class="badge bg-success rounded-pill px-3 shadow-sm">Activo</span>
                                     <?php else: ?>
-                                        <span class="badge bg-danger rounded-pill px-3">Cerrado</span>
+                                        <span class="badge bg-danger rounded-pill px-3 shadow-sm">Cerrado</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
                                     <div class="btn-group shadow-sm">
+                                        
                                         <button class="btn btn-sm btn-outline-primary" title="Editar Nombre"
                                                 onclick="abrirModalEditar('<?php echo $row['id_sede']; ?>', '<?php echo htmlspecialchars($row['nombre'], ENT_QUOTES); ?>')">
                                             <i class="bi bi-pencil"></i>
@@ -68,14 +63,16 @@
                                         
                                         <?php if($row['estado'] == 'Activo'): ?>
                                             <a href="../../controllers/SedeController.php?accion=desactivar&id=<?php echo $row['id_sede']; ?>" 
-                                               class="btn btn-sm btn-outline-warning" title="Cerrar Proyecto"
-                                               onclick="return confirm('¿Seguro que desea CERRAR este proyecto? Ya no aparecerá en los menús de transferencias.');">
+                                               class="btn btn-sm btn-outline-warning btn-estado-sede" 
+                                               data-accion="cerrar" data-nombre="<?php echo htmlspecialchars($row['nombre']); ?>"
+                                               title="Cerrar Proyecto">
                                                 <i class="bi bi-lock-fill"></i>
                                             </a>
                                         <?php else: ?>
                                             <a href="../../controllers/SedeController.php?accion=activar&id=<?php echo $row['id_sede']; ?>" 
-                                               class="btn btn-sm btn-outline-success" title="Reabrir Proyecto"
-                                               onclick="return confirm('¿Desea REABRIR este proyecto?');">
+                                               class="btn btn-sm btn-outline-success btn-estado-sede" 
+                                               data-accion="reabrir" data-nombre="<?php echo htmlspecialchars($row['nombre']); ?>"
+                                               title="Reabrir Proyecto">
                                                 <i class="bi bi-unlock-fill"></i>
                                             </a>
                                         <?php endif; ?>
@@ -93,18 +90,18 @@
     <div class="modal fade" id="modalNuevaSede" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content border-success">
-                <form action="../../controllers/SedeController.php?accion=crear" method="POST">
+                <form id="formNuevaSede" action="../../controllers/SedeController.php?accion=crear" method="POST" novalidate>
                     <div class="modal-header bg-success text-white">
-                        <h5 class="modal-title">Registrar Nuevo Proyecto</h5>
+                        <h5 class="modal-title"><i class="bi bi-building-add"></i> Registrar Nuevo Proyecto</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <label class="form-label fw-bold">Nombre de la Sede/Proyecto:</label>
+                        <label class="form-label fw-bold text-muted small">Nombre de la Sede/Proyecto:</label>
                         <input type="text" name="nombre" class="form-control" placeholder="Ej: Proyecto Fruta del Norte" required>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success">Guardar Proyecto</button>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-light border text-muted" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success fw-bold px-4">Guardar Proyecto</button>
                     </div>
                 </form>
             </div>
@@ -114,19 +111,19 @@
     <div class="modal fade" id="modalEditarSede" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content border-primary">
-                <form action="../../controllers/SedeController.php?accion=editar" method="POST">
+                <form id="formEditarSede" action="../../controllers/SedeController.php?accion=editar" method="POST" novalidate>
                     <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title">Editar Nombre del Proyecto</h5>
+                        <h5 class="modal-title"><i class="bi bi-pencil-square"></i> Editar Nombre del Proyecto</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <input type="hidden" name="id_sede" id="edit_id_sede">
-                        <label class="form-label fw-bold">Nombre de la Sede/Proyecto:</label>
+                        <label class="form-label fw-bold text-muted small">Nombre de la Sede/Proyecto:</label>
                         <input type="text" name="nombre" id="edit_nombre_sede" class="form-control" required>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Actualizar Cambios</button>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-light border text-muted" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary fw-bold px-4">Actualizar Cambios</button>
                     </div>
                 </form>
             </div>
@@ -134,13 +131,157 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+
     <script>
+        // Función para abrir el modal (Nativa)
         function abrirModalEditar(id, nombre) {
             document.getElementById('edit_id_sede').value = id;
             document.getElementById('edit_nombre_sede').value = nombre;
             var modal = new bootstrap.Modal(document.getElementById('modalEditarSede'));
             modal.show();
         }
+
+        $(document).ready(function() {
+            
+            // ----------------------------------------------------
+            // 1. VALIDACIÓN: NUEVO PROYECTO (¡Adiós globito feo!)
+            // ----------------------------------------------------
+            $('#formNuevaSede').on('submit', function(e) {
+                let nombre = $(this).find('input[name="nombre"]').val().trim();
+                
+                if (!nombre) {
+                    e.preventDefault(); // Detiene el envío
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Nombre requerido',
+                        text: 'Por favor, ingresa el nombre del nuevo proyecto o sede.',
+                        confirmButtonColor: '#198754'
+                    });
+                    return false;
+                }
+
+                // Feedback visual de "Guardando..."
+                e.preventDefault();
+                let form = this;
+                let btn = $(this).find('button[type="submit"]');
+                btn.html('<span class="spinner-border spinner-border-sm"></span> Guardando...').prop('disabled', true);
+
+                Swal.fire({
+                    title: 'Guardando Proyecto',
+                    text: 'Registrando nueva sede en el sistema...',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    timer: 800,
+                    timerProgressBar: true,
+                    didOpen: () => { Swal.showLoading(); }
+                }).then(() => { form.submit(); });
+            });
+
+            // ----------------------------------------------------
+            // 2. VALIDACIÓN: EDITAR PROYECTO
+            // ----------------------------------------------------
+            $('#formEditarSede').on('submit', function(e) {
+                let nombre = $('#edit_nombre_sede').val().trim();
+                
+                if (!nombre) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Nombre requerido',
+                        text: 'El nombre del proyecto no puede quedar en blanco.',
+                        confirmButtonColor: '#0d6efd'
+                    });
+                    return false;
+                }
+
+                e.preventDefault();
+                let form = this;
+                let btn = $(this).find('button[type="submit"]');
+                btn.html('<span class="spinner-border spinner-border-sm"></span> Actualizando...').prop('disabled', true);
+
+                Swal.fire({
+                    title: 'Actualizando',
+                    text: 'Guardando cambios del proyecto...',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    timer: 800,
+                    timerProgressBar: true,
+                    didOpen: () => { Swal.showLoading(); }
+                }).then(() => { form.submit(); });
+            });
+
+            // ----------------------------------------------------
+            // 3. CONFIRMACIÓN PRO PARA CAMBIAR ESTADO (Cerrar/Reabrir)
+            // ----------------------------------------------------
+            $('.btn-estado-sede').on('click', function(e) {
+                e.preventDefault(); 
+                const href = $(this).attr('href');
+                const accion = $(this).data('accion');
+                const nombreSede = $(this).data('nombre');
+                
+                let titulo = '', texto = '', colorBtn = '', icon = '';
+
+                if(accion === 'cerrar') {
+                    titulo = '¿Cerrar este proyecto?';
+                    texto = `La sede "${nombreSede}" ya no aparecerá en los menús para transferir equipos.`;
+                    colorBtn = '#ffc107'; // Amarillo Warning
+                    icon = 'warning';
+                } else {
+                    titulo = '¿Reabrir este proyecto?';
+                    texto = `La sede "${nombreSede}" volverá a estar disponible para recibir equipos.`;
+                    colorBtn = '#198754'; // Verde Success
+                    icon = 'question';
+                }
+
+                Swal.fire({
+                    title: titulo,
+                    text: texto,
+                    icon: icon,
+                    showCancelButton: true,
+                    confirmButtonColor: colorBtn,
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, continuar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = href;
+                    }
+                })
+            });
+
+            // ----------------------------------------------------
+            // 4. ATRAPAR MENSAJES DESDE LA URL
+            // ----------------------------------------------------
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('msg')) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Operación Exitosa!',
+                    text: 'Los cambios en los proyectos han sido guardados.',
+                    timer: 3000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
+            if (urlParams.has('error')) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error Operativo',
+                    text: 'No se pudo procesar la solicitud con la base de datos.',
+                    confirmButtonColor: '#dc3545'
+                });
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
     </script>
+</body>
+</html>
 </body>
 </html>

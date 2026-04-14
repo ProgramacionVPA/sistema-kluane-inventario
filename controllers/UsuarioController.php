@@ -26,12 +26,14 @@ if (isset($_GET['accion'])) {
         $resultado = $usuarioModel->crear($datos);
 
         if ($resultado === true) {
-            header("Location: ../views/admin/usuarios.php?msg=guardado");
+            header("Location: ../views/admin/usuarios.php?msg=creado");
         } elseif ($resultado === "DUPLICADO") {
-            echo "<script>alert('Error: Ese correo ya existe.'); window.history.back();</script>";
+            // Mandamos el error por URL en lugar del feo alert()
+            header("Location: ../views/admin/usuarios.php?error=duplicado");
         } else {
-            echo "<script>alert('Error al guardar.'); window.history.back();</script>";
+            header("Location: ../views/admin/usuarios.php?error=bd");
         }
+        exit();
     }
 
     // 2. EDITAR
@@ -40,17 +42,19 @@ if (isset($_GET['accion'])) {
             'id_usuario' => $_POST['id_usuario'],
             'nombre' => $_POST['nombre'],
             'email' => $_POST['email'],
-            'password' => $_POST['password'],
+            'password' => $_POST['password'], // Puede venir vacío, el modelo debe manejarlo
             'rol' => $_POST['rol'],
             'sede' => $_POST['sede'],
             'area' => $_POST['area']
         ];
 
         if ($usuarioModel->actualizar($datos)) {
-            header("Location: ../views/admin/usuarios.php?msg=actualizado");
+            // Usamos msg=ok para que sea igual que la edición de activos
+            header("Location: ../views/admin/usuarios.php?msg=ok");
         } else {
-            echo "<script>alert('Error al actualizar.'); window.history.back();</script>";
+            header("Location: ../views/admin/usuarios.php?error=bd");
         }
+        exit();
     }
 
     // 3. ELIMINAR
@@ -58,8 +62,10 @@ if (isset($_GET['accion'])) {
         if ($usuarioModel->eliminar($_GET['id'])) {
             header("Location: ../views/admin/usuarios.php?msg=eliminado");
         } else {
-            echo "<script>alert('No se puede eliminar. El usuario tiene historial o activos.'); window.history.back();</script>";
+            // Error si el usuario tiene equipos asignados (llave foránea)
+            header("Location: ../views/admin/usuarios.php?error=dependencias");
         }
+        exit();
     }
 }
 ?>

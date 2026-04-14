@@ -18,21 +18,30 @@ require_once '../../controllers/CargarHistorialController.php';
         
         <div class="d-flex justify-content-between align-items-center mb-4 header-historial">
             <div>
-                <h2 class="text-primary fs-3 fs-md-2"><i class="bi bi-clock-history"></i> Historial de Movimientos</h2>
+                <h2 class="text-primary fs-3 fs-md-2 fw-bold"><i class="bi bi-clock-history"></i> Historial de Movimientos</h2>
                 <h5 class="text-muted fs-6 fs-md-5">
                     <?php echo htmlspecialchars($equipo['marca'] . " " . $equipo['modelo']); ?> 
-                    <span class="badge bg-dark"><?php echo htmlspecialchars($equipo['serie']); ?></span>
+                    <span class="badge bg-dark ms-2"><?php echo htmlspecialchars($equipo['serie']); ?></span>
                 </h5>
             </div>
-            <a href="dashboard.php" class="btn btn-outline-secondary btn-sm d-none d-md-inline-block">
+            <a href="dashboard.php" class="btn btn-outline-secondary btn-sm d-none d-md-inline-block shadow-sm">
                 <i class="bi bi-arrow-left"></i> Volver al Panel
             </a>
-            <a href="dashboard.php" class="btn btn-outline-secondary w-100 d-md-none">
-                <i class="bi bi-arrow-left"></i> Volver al Panel
+            <a href="dashboard.php" class="btn btn-outline-secondary w-100 d-md-none mt-2">
+                <i class="bi bi-arrow-left"></i> Volver
             </a>
         </div>
 
-        <div class="card shadow border-0 mb-5">
+        <div class="card shadow border-0 mb-5 rounded-3">
+            
+            <div class="card-header bg-white border-bottom py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <h6 class="mb-3 mb-md-0 fw-bold text-secondary"><i class="bi bi-card-checklist"></i> Registro de Auditoría</h6>
+                <div class="input-group input-group-sm w-100 w-md-25" style="max-width: 300px;">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" id="buscador_historial" class="form-control" placeholder="Buscar por fecha, nombre u observación...">
+                </div>
+            </div>
+
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-striped table-hover align-middle mb-0" style="min-width: 600px;">
@@ -44,10 +53,10 @@ require_once '../../controllers/CargarHistorialController.php';
                                 <th>Observaciones</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tbody_historial">
                             <?php if (count($listaHistorial) > 0): ?>
                                 <?php foreach ($listaHistorial as $row): ?>
-                                    <tr>
+                                    <tr class="fila-historial">
                                         <td class="ps-4 fw-bold text-muted">
                                             <?php echo date("d/m/Y", strtotime($row['fecha_asignacion'])); ?><br>
                                             <small><i class="bi bi-clock"></i> <?php echo date("H:i", strtotime($row['fecha_asignacion'])); ?></small>
@@ -65,14 +74,14 @@ require_once '../../controllers/CargarHistorialController.php';
                                                     <i class="bi bi-person-fill text-secondary"></i>
                                                 </div>
                                                 <div>
-                                                    <strong><?php echo htmlspecialchars($row['nombre_completo']); ?></strong><br>
+                                                    <strong class="text-dark"><?php echo htmlspecialchars($row['nombre_completo']); ?></strong><br>
                                                     <small class="text-muted"><?php echo htmlspecialchars($row['email']); ?></small>
                                                 </div>
                                             </div>
                                         </td>
                                         
                                         <td>
-                                            <span class="text-dark"><?php echo htmlspecialchars($row['observacion']); ?></span>
+                                            <span class="text-secondary small"><?php echo htmlspecialchars($row['observacion']); ?></span>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -91,5 +100,21 @@ require_once '../../controllers/CargarHistorialController.php';
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Buscador Instantáneo para el Historial
+            $('#buscador_historial').on('keyup', function() {
+                let valorBusqueda = $(this).val().toLowerCase();
+                
+                // Filtra todas las filas que tengan la clase 'fila-historial'
+                $("#tbody_historial tr.fila-historial").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(valorBusqueda) > -1)
+                });
+            });
+        });
+    </script>
 </body>
 </html>

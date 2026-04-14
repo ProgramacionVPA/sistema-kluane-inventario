@@ -65,7 +65,7 @@ if (isset($_GET['accion'])) {
         ];
 
         if ($activoModel->actualizar($datos)) {
-            header("Location: ../views/admin/dashboard.php?msg=actualizado");
+            header("Location: ../views/admin/dashboard.php?msg=ok");
         } else {
             echo "Error al actualizar el activo.";
         }

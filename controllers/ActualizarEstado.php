@@ -1,9 +1,10 @@
 <?php
 session_start();
 
-// 1. Seguridad
+// 1. Seguridad (Adaptada para AJAX)
 if (!isset($_SESSION['id_usuario'])) {
-    header("Location: ../views/auth/login.php");
+    // En AJAX, en lugar de redireccionar, devolvemos un error JSON
+    echo json_encode(['status' => 'error', 'message' => 'No autorizado']);
     exit();
 }
 
@@ -37,12 +38,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $texto_obs
     );
 
-    // 4. Redirección
+    // 4. Respuesta AJAX (¡AQUÍ ESTÁ LA MAGIA!)
+    header('Content-Type: application/json; charset=utf-8'); // Le decimos al navegador que esto es JSON
+    
     if ($resultado) {
-        // Redirigimos de vuelta a la matriz
-        header("Location: ../views/admin/ver_matriz.php?sede=" . $id_sede_actual . "&msg=ok");
+        // Le devolvemos un 'success' al JavaScript
+        echo json_encode(['status' => 'success', 'message' => 'Actualizado correctamente']);
     } else {
-        echo "<script>alert('Error al actualizar la base de datos.'); window.history.back();</script>";
+        // Le devolvemos un error si falla la BD
+        echo json_encode(['status' => 'error', 'message' => 'Error al actualizar la base de datos']);
     }
+    exit(); // Importante terminar el script aquí
 }
 ?>
