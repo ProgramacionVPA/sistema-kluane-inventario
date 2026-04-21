@@ -10,6 +10,7 @@ require_once '../../controllers/CargarHistorialController.php';
     <title>Historial - Kluane</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../../public/css/style.css">
 </head>
 <body class="bg-light">
@@ -102,19 +103,8 @@ require_once '../../controllers/CargarHistorialController.php';
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 
-    <script>
-        $(document).ready(function() {
-            // Buscador Instantáneo para el Historial
-            $('#buscador_historial').on('keyup', function() {
-                let valorBusqueda = $(this).val().toLowerCase();
-                
-                // Filtra todas las filas que tengan la clase 'fila-historial'
-                $("#tbody_historial tr.fila-historial").filter(function() {
-                    $(this).toggle($(this).text().toLowerCase().indexOf(valorBusqueda) > -1)
-                });
-            });
-        });
-    </script>
+    <script src="../../public/js/kluane_app.js"></script>
 </body>
 </html>

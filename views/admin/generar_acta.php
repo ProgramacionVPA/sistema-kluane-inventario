@@ -8,8 +8,10 @@ require_once '../../libs/fpdf/fpdf.php';
 class PDF extends FPDF {
     // Cabecera de página
     function Header() {
-        // Logo
-        $this->Image('../../public/img/logo.png',10,8,33);
+        // Logo (Asegúrate de que la ruta exista en tu servidor)
+        if(file_exists('../../public/img/logo.png')) {
+            $this->Image('../../public/img/logo.png',10,8,33);
+        }
         
         $this->SetFont('Arial','B',15);
         $this->Cell(80); // Mover a la derecha
@@ -42,7 +44,7 @@ $fecha_actual = date('d/m/Y');
 $pdf->Cell(0,10,utf8_decode('Quito, ' . $fecha_actual),0,1,'R');
 $pdf->Ln(10);
 
-// Texto Legal (Manejamos si no hay responsable asignado)
+// Texto Legal
 $nombre_responsable = $activo['responsable'] ? $activo['responsable'] : "___________________";
 
 $pdf->SetFont('Arial','',12);
@@ -78,20 +80,28 @@ $pdf->Cell($w_data, $h, utf8_decode($activo['estado']),1,1,'L');
 $pdf->Cell($w_label, $h, utf8_decode('Sede / Proyecto:'),1,0,'L');
 $pdf->Cell($w_data, $h, utf8_decode($activo['sede']),1,1,'L');
 
-$pdf->Ln(20);
+$pdf->Ln(25);
 
 // Firmas
-$pdf->SetY(-60);
+$pdf->SetY(-70); // Subimos un poco para dar espacio a los nombres
 $pdf->SetFont('Arial','B',11);
 
-// Firma Empleado y Dpto IT
+// Líneas de firma
 $pdf->Cell(90, 0, '__________________________', 0, 0, 'C');
 $pdf->Cell(90, 0, '__________________________', 0, 1, 'C');
 $pdf->Ln(5);
+
+// Títulos de firma
 $pdf->Cell(90, 5, utf8_decode('RECIBÍ CONFORME'), 0, 0, 'C');
 $pdf->Cell(90, 5, utf8_decode('ENTREGADO POR'), 0, 1, 'C');
 $pdf->SetFont('Arial','',10);
+
+// Nombres
 $pdf->Cell(90, 5, utf8_decode($nombre_responsable), 0, 0, 'C');
+$pdf->Cell(90, 5, utf8_decode('Victor Paul Alvarez Alvarez'), 0, 1, 'C');
+
+// Cargos / Dpto
+$pdf->Cell(90, 5, '', 0, 0, 'C');
 $pdf->Cell(90, 5, utf8_decode('Dpto. Infraestructura IT'), 0, 1, 'C');
 
 $pdf->Output();

@@ -96,7 +96,7 @@ function filtrarMatrizAjax(idSedeForzada = null) {
 // ==========================================
 $(document).ready(function() {
     // 1. Auto-cargar tabla
-    if (SEDE_POR_DEFECTO !== "") {
+    if (typeof SEDE_POR_DEFECTO !== 'undefined' && SEDE_POR_DEFECTO !== "") {
         filtrarMatrizAjax(SEDE_POR_DEFECTO);
     }
 
@@ -125,28 +125,20 @@ $(document).ready(function() {
                 btn.html(textoOriginal).prop('disabled', false);
                 $('#modalEditar').modal('hide'); 
                 
-                // --- ALERTA SWEETALERT2 TIPO TOAST ---
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'success',
-                    title: 'Cambios guardados',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                });
+                // Usamos la función global del jefe
+                mensaje_formulario('success', 'Cambios guardados');
                 
                 // Recargamos la tabla
                 let sedeId = $('#select_sede').val() || SEDE_POR_DEFECTO;
                 filtrarMatrizAjax(sedeId);
             },
             error: function() {
-                Swal.fire('Error', 'Ocurrió un problema de conexión', 'error');
+                // Usamos la función global del jefe
+                mensaje_formulario('error', 'Ocurrió un problema de conexión');
                 btn.html(textoOriginal).prop('disabled', false);
             }
         });
     });
-
 
     // 4. INTERCEPTAR FORMULARIO DE TRANSFERENCIA (AJAX)
     $('#modalTransferir form').on('submit', function(e) {
@@ -165,22 +157,15 @@ $(document).ready(function() {
                 btn.html(textoOriginal).prop('disabled', false);
                 $('#modalTransferir').modal('hide');
                 
-                // --- ALERTA SWEETALERT2 TIPO TOAST (Color amarillo/warning) ---
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'warning',
-                    title: 'Equipo transferido',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                });
+                // Usamos la función global del jefe
+                mensaje_formulario('success', 'Equipo transferido');
                 
                 let sedeId = $('#select_sede').val() || SEDE_POR_DEFECTO;
                 filtrarMatrizAjax(sedeId); 
             },
             error: function() {
-                Swal.fire('Error', 'No se pudo completar la transferencia', 'error');
+                // Usamos la función global del jefe
+                mensaje_formulario('error', 'No se pudo completar la transferencia');
                 btn.html(textoOriginal).prop('disabled', false);
             }
         });

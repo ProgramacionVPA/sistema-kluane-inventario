@@ -103,5 +103,3 @@ require_once '../../controllers/CargarAsignacionController.php';
     <script src="../../public/js/kluane_app.js"></script>
 </body>
 </html>
-</body>
-</html>

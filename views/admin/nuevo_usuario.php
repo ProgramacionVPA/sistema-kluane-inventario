@@ -79,66 +79,6 @@ require_once '../../controllers/CargarNuevoUsuarioController.php';
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 
-    <script>
-        $(document).ready(function() {
-            
-            $('#formNuevoUsuario').on('submit', function(e) {
-                // 1. Obtenemos los valores obligatorios
-                let nombre = $('#nombre').val().trim();
-                let email = $('#email').val().trim();
-                let password = $('#password').val().trim();
-                let rol = $('#rol').val();
-                let sede = $('#sede').val();
-
-                // Validación de seguridad (Todos los campos requeridos)
-                if (!nombre || !email || !password || !rol || !sede) {
-                    e.preventDefault();
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Formulario Incompleto',
-                        text: 'Por favor, llena todos los campos obligatorios antes de guardar.',
-                        confirmButtonColor: '#198754'
-                    });
-                    return false;
-                }
-
-                // Validación de longitud de contraseña
-                if (password.length < 6) {
-                    e.preventDefault();
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Contraseña muy corta',
-                        text: 'La contraseña debe tener al menos 6 caracteres por seguridad.',
-                        confirmButtonColor: '#dc3545'
-                    });
-                    return false;
-                }
-
-                // 2. FEEDBACK VISUAL ANTES DE ENVIAR
-                e.preventDefault(); 
-                let form = this;
-                let btn = $('#btnGuardarUsuario');
-
-                btn.html('<span class="spinner-border spinner-border-sm"></span> Guardando...').prop('disabled', true);
-
-                Swal.fire({
-                    title: 'Creando Usuario',
-                    text: 'Registrando al nuevo empleado en el sistema...',
-                    icon: 'info',
-                    allowOutsideClick: false,
-                    showConfirmButton: false,
-                    timer: 800, 
-                    timerProgressBar: true,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                }).then(() => {
-                    // Enviamos el formulario al controlador PHP
-                    form.submit();
-                });
-            });
-
-        });
-    </script>
+    <script src="../../public/js/kluane_app.js"></script>
 </body>
 </html>

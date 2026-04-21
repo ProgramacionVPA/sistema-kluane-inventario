@@ -9,6 +9,7 @@ require_once '../../controllers/CargarMatrizController.php';
     <title>Matriz 09 - Gestión Campamento</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../../public/css/style.css">
 </head>
 <body class="bg-light">
@@ -30,20 +31,6 @@ require_once '../../controllers/CargarMatrizController.php';
 
     <div class="container-fluid px-2 px-md-4">
         
-        <?php if(isset($_GET['msg'])): ?>
-            <?php if($_GET['msg'] == 'ok'): ?>
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <strong>¡Cambios Guardados!</strong> La matriz se ha actualizado correctamente.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <?php elseif($_GET['msg'] == 'transfer'): ?>
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    <i class="bi bi-truck"></i> <strong>¡Transferencia Exitosa!</strong> El equipo ha sido enviado a la otra sede y ya no está en tu lista.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <?php endif; ?>
-        <?php endif; ?>
-
         <?php if($_SESSION['id_rol'] == 1): ?>
             <div class="card mb-4 shadow-sm border-0">
                 <div class="card-body bg-white rounded d-flex align-items-center">
@@ -206,19 +193,16 @@ require_once '../../controllers/CargarMatrizController.php';
     </div>
     <?php endif; ?>
 
-    <<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 
     <script>
         const ID_ROL_USUARIO = <?php echo isset($_SESSION['id_rol']) ? $_SESSION['id_rol'] : 'null'; ?>;
         const SEDE_POR_DEFECTO = '<?php echo isset($id_sede_seleccionada) ? $id_sede_seleccionada : ""; ?>';
     </script>
 
+    <script src="../../public/js/kluane_app.js"></script>
     <script src="../../public/js/matriz.js"></script>
-</body>
-</html>
 </body>
 </html>

@@ -95,60 +95,6 @@ require_once '../../controllers/CargarNuevoActivoController.php';
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 
-    <script>
-        $(document).ready(function() {
-            
-            // 1. MANEJO DE ERRORES DESDE EL CONTROLADOR (El que era el div rojo)
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('error') && urlParams.get('error') === 'duplicado') {
-                Swal.fire({
-                    icon: 'error',
-                    title: '¡Código Duplicado!',
-                    text: 'El Código Interno que intentas registrar ya existe en la base de datos. Verifica la etiqueta física del equipo.',
-                    confirmButtonColor: '#dc3545'
-                });
-                
-                // Limpiamos la URL
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-
-            // 2. VALIDACIÓN Y FEEDBACK AL ENVIAR
-            $('#formNuevoActivo').on('submit', function(e) {
-                
-                // Recolectar datos
-                let codigo = $('#codigo').val().trim();
-                let serie = $('#serie').val().trim();
-                let marca = $('#marca').val().trim();
-                let modelo = $('#modelo').val().trim();
-                let categoria = $('#categoria').val();
-                let sede = $('#sede').val();
-
-                // Validar que nada esté vacío
-                if (!codigo || !serie || !marca || !modelo || !categoria || !sede) {
-                    e.preventDefault();
-
-                    mensaje_formulario('error', 'No tienes no tienes ');
-
-                    return false;
-                }
-
-               
-             
-        });
-
-   function mensaje_formulario (icon, msg){
-    
-       Swal.fire({
-            title: msg,
-            icon: icon
-          });
-
-      }
-    
-    
-        });
-
-
-    </script>
+    <script src="../../public/js/kluane_app.js"></script>
 </body>
 </html>

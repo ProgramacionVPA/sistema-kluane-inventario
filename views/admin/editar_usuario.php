@@ -77,64 +77,6 @@ require_once '../../controllers/CargarEditarUsuarioController.php';
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 
-    <script>
-        $(document).ready(function() {
-            
-            $('#formEditarUsuario').on('submit', function(e) {
-                // 1. Obtenemos los valores
-                let nombre = $('#nombre').val().trim();
-                let email = $('#email').val().trim();
-                let password = $('#password').val().trim(); // Atrapamos el password
-
-                // Validación de seguridad (Campos obligatorios)
-                if (!nombre || !email) {
-                    e.preventDefault();
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Campos requeridos',
-                        text: 'El nombre y el correo electrónico no pueden estar vacíos.',
-                        confirmButtonColor: '#0d6efd'
-                    });
-                    return false;
-                }
-
-                // NUEVO: Validación de contraseña (Solo si decidió escribir algo)
-                if (password.length > 0 && password.length < 6) {
-                    e.preventDefault();
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Contraseña muy corta',
-                        text: 'Si deseas cambiar la contraseña, debe tener al menos 6 caracteres por seguridad.',
-                        confirmButtonColor: '#dc3545'
-                    });
-                    return false;
-                }
-
-                // 2. FEEDBACK VISUAL ANTES DE ENVIAR
-                e.preventDefault(); 
-                let form = this;
-                let btn = $('#btnActualizar');
-
-                btn.html('<span class="spinner-border spinner-border-sm"></span> Guardando...').prop('disabled', true);
-
-                Swal.fire({
-                    title: 'Actualizando Perfil',
-                    text: 'Guardando los datos del usuario...',
-                    icon: 'info',
-                    allowOutsideClick: false,
-                    showConfirmButton: false,
-                    timer: 800, // Breve pausa para que se vea la animación
-                    timerProgressBar: true,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                }).then(() => {
-                    // Enviamos el formulario al controlador PHP
-                    form.submit();
-                });
-            });
-
-        });
-    </script>
+    <script src="../../public/js/kluane_app.js"></script>
 </body>
 </html>

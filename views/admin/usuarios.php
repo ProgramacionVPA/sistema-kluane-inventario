@@ -60,7 +60,7 @@ require_once '../../controllers/CargarUsuariosController.php';
                                 <td class="text-muted"><?php echo htmlspecialchars($row['email']); ?></td>
                                 <td class="text-center">
                                     <?php 
-                                        if($row['id_rol'] == 1) echo '<span class="badge bg-dark shadow-sm">Admin</span>';
+                                        if($row['id_rol'] == 1) echo '<span class="badge bg-dark shadow-sm">admin</span>';
                                         elseif($row['id_rol'] == 2) echo '<span class="badge bg-info text-dark shadow-sm">Técnico</span>';
                                         else echo '<span class="badge bg-secondary shadow-sm">Colaborador</span>';
                                     ?>
@@ -96,92 +96,6 @@ require_once '../../controllers/CargarUsuariosController.php';
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 
-    <script>
-        $(document).ready(function() {
-            
-            // 1. BUSCADOR EN TIEMPO REAL
-            $('#buscador_usuarios').on('keyup', function() {
-                let valorBusqueda = $(this).val().toLowerCase();
-                $("#tbody_usuarios tr.fila-usuario").filter(function() {
-                    $(this).toggle($(this).text().toLowerCase().indexOf(valorBusqueda) > -1)
-                });
-            });
-
-            // 2. CONFIRMACIÓN PRO PARA ELIMINAR
-            $('.btn-eliminar-usuario').on('click', function(e) {
-                e.preventDefault(); 
-                const href = $(this).attr('href');
-
-                Swal.fire({
-                    title: '¿Eliminar a este usuario?',
-                    text: "Si el usuario tiene equipos asignados, el sistema no te dejará borrarlo por seguridad.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Sí, eliminar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = href;
-                    }
-                })
-            });
-
-            // 3. ATRAPAR MENSAJES DESDE LA URL (El cerebro del feedback)
-            const urlParams = new URLSearchParams(window.location.search);
-            
-            if (urlParams.has('msg')) {
-                const msg = urlParams.get('msg');
-                let titulo = '', texto = '', icono = 'success';
-                
-                if (msg === 'creado') {
-                    titulo = '¡Usuario Creado!';
-                    texto = 'El nuevo empleado ya puede acceder al sistema.';
-                } else if (msg === 'ok') {
-                    titulo = '¡Cambios Guardados!';
-                    texto = 'El perfil del usuario fue actualizado.';
-                } else if (msg === 'eliminado') {
-                    titulo = 'Usuario Eliminado';
-                    texto = 'El registro fue borrado de la base de datos.';
-                }
-                
-                Swal.fire({
-                    icon: icono,
-                    title: titulo,
-                    text: texto,
-                    timer: 3000,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: 'top-end'
-                });
-            }
-
-            if (urlParams.has('error')) {
-                const error = urlParams.get('error');
-                let titulo = 'Error Operativo', texto = 'No se pudo completar la acción.';
-                
-                if (error === 'duplicado') {
-                    titulo = 'Correo Duplicado';
-                    texto = 'Ese correo electrónico ya está registrado en otro usuario.';
-                } else if (error === 'dependencias') {
-                    titulo = 'No se puede eliminar';
-                    texto = 'Este usuario tiene equipos asignados o historial en el sistema.';
-                }
-                
-                Swal.fire({
-                    icon: 'error',
-                    title: titulo,
-                    text: texto,
-                    confirmButtonColor: '#dc3545'
-                });
-            }
-
-            // Limpiar la URL para que no repita la alerta al recargar (F5)
-            if (urlParams.has('msg') || urlParams.has('error')) {
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-        });
-    </script>
+    <script src="../../public/js/kluane_app.js"></script>
 </body>
 </html>

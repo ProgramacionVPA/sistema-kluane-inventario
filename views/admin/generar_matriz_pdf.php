@@ -7,12 +7,16 @@ require_once '../../libs/fpdf/fpdf.php';
 
 class PDF extends FPDF {
     function Header() {
-        // Controlamos la cabecera manualmente en el cuerpo
+        // Logo oficial en la esquina superior izquierda
+        if(file_exists('../../public/img/logo.png')) {
+            $this->Image('../../public/img/logo.png', 10, 8, 33);
+        }
     }
     
     function Footer() {
         $this->SetY(-15);
         $this->SetFont('Arial','I',8);
+        // Agregada la decodificación correcta para el guion largo y acentos
         $this->Cell(0,10,utf8_decode('Página ').$this->PageNo().'/{nb} - Sistema Kluane Inventario',0,0,'C');
     }
 }
@@ -23,18 +27,20 @@ $pdf->AddPage();
 
 // --- ENCABEZADO TIPO EXCEL EC-IT-F-09 ---
 $pdf->SetFont('Arial','B',16);
-$pdf->Cell(180, 10, 'KLUANE DRILLING ECUADOR S.A.', 0, 0, 'L');
+// Desplazamos el título a la derecha (X=50) para dejar espacio al logo
+$pdf->SetXY(50, 12);
+$pdf->Cell(140, 10, 'KLUANE DRILLING ECUADOR S.A.', 0, 0, 'L');
 
 // Cuadro de Código a la derecha
 $pdf->SetFont('Arial','B',9);
 $pdf->SetXY(240, 10); 
 $pdf->MultiCell(40, 5, "EC-IT-F-09\nREV-0\nOCT-2025", 1, 'C');
 
-$pdf->SetXY(10, 25);
+$pdf->SetXY(10, 28);
 $pdf->SetFont('Arial','B',14);
 $pdf->Cell(0, 10, utf8_decode('MATRIZ DE GESTIÓN DE EQUIPOS TECNOLÓGICOS EN CAMPAMENTO'), 0, 1, 'C');
 
-$pdf->Ln(5);
+$pdf->Ln(2);
 
 // --- RESUMEN (KPIs) ---
 $pdf->SetFont('Arial','B',10);
@@ -63,14 +69,14 @@ $pdf->Cell(40, 8, $total_danados, 1, 0, 'C');
 $pdf->Cell(30, 8, $conteo_laptops, 1, 0, 'C');
 $pdf->Cell(30, 8, $conteo_radios, 1, 1, 'C');
 
-$pdf->Ln(10);
+$pdf->Ln(8);
 
 // --- TABLA DE DATOS ---
 $pdf->SetFillColor(50, 50, 50); // Fondo Oscuro
 $pdf->SetTextColor(255, 255, 255); // Letra Blanca
 $pdf->SetFont('Arial','B',9);
 
-// Anchos de columnas
+// Anchos de columnas (Suma exacta = 270mm, encaja perfecto en A4 Landscape)
 $w = array(10, 40, 45, 50, 40, 30, 30, 25);
 $header = array('N', 'Equipo', 'Serie', 'Responsable', utf8_decode('Área'), 'Fecha', utf8_decode('Ubicación'), 'Estado');
 
@@ -107,7 +113,7 @@ foreach ($filas as $row) {
 }
 
 // Firmas al final
-$pdf->Ln(30);
+$pdf->Ln(25);
 $pdf->SetFont('Arial','B',9);
 
 $pdf->Cell(90, 0, '__________________________', 0, 0, 'C');
@@ -117,7 +123,8 @@ $pdf->Cell(90, 0, '__________________________', 0, 1, 'C');
 $pdf->Ln(5);
 
 $pdf->Cell(90, 4, 'ELABORADO POR', 0, 0, 'C');
-$pdf->Cell(90, 4, 'REVISADO POR (LOGISTICA)', 0, 0, 'C');
+// Corrección ortográfica: LOGÍSTICA
+$pdf->Cell(90, 4, utf8_decode('REVISADO POR (LOGÍSTICA)'), 0, 0, 'C');
 $pdf->Cell(90, 4, 'RECIBIDO EN SITIO', 0, 1, 'C');
 
 $pdf->SetFont('Arial','',8);

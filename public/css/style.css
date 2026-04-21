@@ -4,7 +4,12 @@
 
 /* --- Estilos para la página de Login --- */
 .login-body {
-    background-color: #f0f2f5;
+    /* Fondo con filtro oscuro para resaltar la tarjeta */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url('../img/fondo_kluane.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -14,12 +19,21 @@
 
 .login-card {
     width: 100%;
-    max-width: 400px;
-    padding: 2.5rem 2rem;
+    max-width: 420px;
+    padding: 3rem 2.5rem;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    background: white;
-    border-top: 5px solid #0d6efd;
+    /* Efecto "Glassmorphism" (Vidrio esmerilado) */
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center; /* ¡Clave! Centra todo el contenido internamente */
+}
+
+/* Estilos específicos para el logo en el login */
+.login-logo {
+    max-height: 70px;
+    margin-bottom: 1rem; /* Espaciado con el texto */
 }
 
 /* --- Botones y Elementos de Formulario (Usados en Login y Dashboards) --- */
@@ -28,10 +42,13 @@
     color: white;
     font-weight: bold;
     padding: 0.6rem;
+    transition: all 0.3s ease;
 }
 
 .btn-kluane:hover {
     background-color: #0b5ed7;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
 }
 
 .input-group-text {
@@ -65,7 +82,7 @@
     }
 }
 
-    /* --- Ajustes para pantallas muy pequeñas (Ej: Matriz 09) --- */
+/* --- Ajustes para pantallas muy pequeñas (Ej: Matriz 09) --- */
 @media (max-width: 576px) {
     .navbar-brand { 
         font-size: 1.1rem !important; 
